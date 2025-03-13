@@ -1,10 +1,23 @@
 #!/bin/sh
 
+CMD_NAME="jinmori"
+CMD_VERSION="0.1.0"
+
 usage() {
 	cat <<EOF
-A Standard ML package manager
+A Standard ML package manager focusing on MLton
 
-Usage: jinmori [subcommand]
+Usage: $CMD_NAME [OPTIONS] [COMMAND]
+
+Options:
+	--help			Print help
+	--version 		Print version info
+
+Commands:
+	setup	Initialize $CMD_NAME with the current user
+	new	Create a new sml project
+
+See '$CMD_NAME help <command>' for more information on a specific command.
 EOF
 }
 
@@ -36,7 +49,6 @@ $end_mark
 EOF
 }
 
-CMD_NAME="jinmori"
 CMD_PATH="$0"
 
 case "$1" in
@@ -46,8 +58,7 @@ setup)
 	FORCE=0
 	PATHAPPEND=1
 
-	if ! OPTIONS=$(getopt --options d:f --longoptions dest:,force,set-env -- "$@"); then
-		usage
+	if ! OPTIONS=$(getopt --options d:f --longoptions dest:,force,no-modify-path -- "$@"); then
 		exit 1
 	fi
 	eval set -- "$OPTIONS"
@@ -83,8 +94,8 @@ setup)
 		if [ "$FORCE" -eq 1 ]; then
 			rm -rf "$DIR"
 		else
-			printf "Directory %s already exists. You may have initialied %s already." "$DIR" "$CMD_NAME"
-			printf "Do you want to delete the existing directory? (y/N) "
+			echo "Directory $DIR already exists. You may have set up $CMD_NAME already."
+			printf "Do you want to remove the existing installation and overwrite? (y/N) "
 
 			read -r response
 			case "$response" in
@@ -109,7 +120,7 @@ setup)
 		rm --force "$tmp_path"
 	fi
 
-	if [ "$PATHAPPEND" = 1 ]; then
+	if [ "$PATHAPPEND" -eq 1 ]; then
 		update_path
 	fi
 	;;
@@ -206,11 +217,51 @@ EOF
 	esac
 	;;
 
-help | --help | -h | "")
+help | --help | -h)
+	shift
+	case "$1" in
+	setup)
+		cat <<EOF
+Initialize $CMD_NAME with the current user
+
+Usage: $CMD_NAME setup [OPTIONS]
+
+Options:
+	-d, --dest <dir>	Specify the directory to use as \$JINMORI_HOME (default: \$HOME/.jinmori)
+	-f, --force	Overwrite existing \$JINMORI_HOME
+	--no-modify-path	Prevent modifying the shell PATH variable
+EOF
+		;;
+	new)
+		cat <<EOF
+Create a new sml project
+
+Usage: $CMD_NAME new PROJECT
+
+Caveats:
+	PROJECT must only contain ASCII alphabets.
+	This is because the project name is used to define some boilerplate code,
+	and sml only (officially) supports ASCII.
+EOF
+		;;
+	"")
+		usage
+		;;
+	*)
+		echo "Error: Unknown command '$1'" >&2
+		exit 1
+		;;
+	esac
+	;;
+--version)
+	shift
+	echo "$CMD_VERSION"
+	;;
+"")
 	usage
 	;;
 *)
-	echo "Error: Unknown command or flag '$SUBCOMMAND'" >&2
+	echo "Error: Unknown command or flag '$1'" >&2
 	usage
 	exit 1
 	;;
