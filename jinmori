@@ -10,7 +10,7 @@ A Standard ML package manager focusing on MLton
 Usage: $CMD_NAME [OPTIONS] [COMMAND]
 
 Options:
-	--help			Print help
+	--help			Print help (this page)
 	--version 		Print version info
 
 Commands:
@@ -228,7 +228,7 @@ Usage: $CMD_NAME setup [OPTIONS]
 
 Options:
 	-d, --dest <dir>	Specify the directory to use as \$JINMORI_HOME (default: \$HOME/.jinmori)
-	-f, --force	Overwrite existing \$JINMORI_HOME
+	-f, --force		Overwrite existing \$JINMORI_HOME
 	--no-modify-path	Prevent modifying the shell PATH variable
 EOF
 		;;
