@@ -21,6 +21,32 @@ See '$CMD_NAME help <command>' for more information on a specific command.
 EOF
 }
 
+usage__setup() {
+	cat <<SETUP
+Initialize $CMD_NAME with the current user
+
+Usage: $CMD_NAME setup [OPTIONS]
+
+Options:
+	-d, --dest <dir>	Specify the directory to use as \$JINMORI_HOME (default: \$HOME/.jinmori)
+	-f, --force		Overwrite existing \$JINMORI_HOME
+	--no-modify-path	Prevent modifying the shell PATH variable
+SETUP
+}
+
+usage__new() {
+	cat <<NEW
+Create a new sml project
+
+Usage: $CMD_NAME new PROJECT
+
+Caveats:
+	PROJECT must only contain ASCII alphabets.
+	This is partially because the project name is used to define some boilerplate code,
+	and sml only (officially) supports ASCII.
+NEW
+}
+
 update_path() {
 	shell_config="$HOME/.bashrc"
 	if [ -n "$ZSH_VERSION" ]; then
@@ -46,6 +72,74 @@ case ":\$PATH:" in
 esac
 
 $end_mark
+EOF
+}
+
+init_proj() {
+	proj=$1
+
+	cat >"$proj/src/$main.sml" <<MAIN
+structure $main:
+sig
+  val greeting: string
+end =
+struct
+  val hello = "Hello,"
+  val world = "World!"
+  val greeting = hello ^ world ^ "\n"
+end
+MAIN
+
+	cat >"$proj/src/Exec.sml" <<CLI
+val () = print $main.greeting
+CLI
+
+	cat >"$proj/tests/$main.sml" <<"TEST"
+if true = false then
+	raise Fail "The fabric of reality crumbles..."
+else
+	()
+TEST
+
+	cat >"$proj/src/src.mlb" <<SRC
+\$(SML_LIB)/basis/basis.mlb
+$main.sml
+SRC
+
+	cat >"$proj/$proj.mlb" <<-"MAIN_MLB"
+		src/src.mlb
+		src/Exec.sml
+	MAIN_MLB
+
+	cat >"$proj/$proj.tests.mlb" <<EOF
+src/src.mlb
+tests/$main.sml
+EOF
+
+	cat >"$proj/Makefile" <<EOF
+BIN := \$(CURDIR)/bin
+SRC := \$(CURDIR)/src
+TESTS := \$(CURDIR)/tests
+
+APP := \$(BIN)/$proj
+TESTER := \$(BIN)/testall
+
+MLTON_FLAGS := $MLTON_FLAGS
+
+all: \$(APP) \$(TESTER)
+.PHONY: test
+
+\$(APP): \$(SRC)/*.sml
+	mlton \$(MLTON_FLAGS) -output \$@ $proj.mlb
+
+\$(TESTER): \$(SRC)/*.sml \$(TESTS)/*.sml
+	mlton \$(MLTON_FLAGS) -output \$@ $proj.tests.mlb
+
+test: \$(TESTER)
+	\$(TESTER)
+
+clean:
+	rm -f \$(BIN)/*
 EOF
 }
 
@@ -129,90 +223,23 @@ new)
 	shift
 	case "$1" in
 	"")
-		echo "No project name provided." >&2
+		echo "Error: No project name provided." >&2
 		exit 1
 		;;
 	*[!A-Za-z]*)
-		echo "Project name must only contain ASCII alphabets." >&2
+		echo "Error: Project name must only contain ASCII alphabets." >&2
 		exit 1
 		;;
 	*)
-		PROJ="$1"
-		shift
+		proj="$1"
+		main=$(echo "$proj" | awk '{ $1 = toupper(substr($1, 1, 1)) substr($1, 2); print }')
 
-		src="$PROJ/src"
-		tests="$PROJ/tests"
-		bin="$PROJ/bin"
-		main=$(echo "$PROJ" | awk '{ $1 = toupper(substr($1, 1, 1)) substr($1, 2); print }')
-
-		if ! mkdir -p "$src" "$tests" "$bin" 2>/dev/null; then
-			echo "Destination \`$PROJ\` already exists." >&2
+		if ! mkdir -p "$proj/src" "$proj/tests" "$proj/bin" 2>/dev/null; then
+			echo "Error: Destination \`$proj\` already exists." >&2
 			exit 1
 		fi
-
-		cat >"$src/$main.sml" <<EOF
-structure $main:
-sig
-  val greeting: string
-end =
-struct
-  val hello = "Hello,"
-  val world = "World!"
-  val greeting = hello ^ world ^ "\n"
-end
-EOF
-
-		cat >"$src/Exec.sml" <<EOF
-val () = print $main.greeting
-EOF
-
-		cat >"$tests/$main.sml" <<EOF
-if true = false then
-	raise Fail "The fabric of reality crumbles..."
-else
-	()
-EOF
-
-		cat >"$src/src.mlb" <<EOF
-\$(SML_LIB)/basis/basis.mlb
-$main.sml
-EOF
-
-		cat >"$PROJ/$PROJ.mlb" <<EOF
-src/src.mlb
-src/Exec.sml
-EOF
-
-		cat >"$PROJ/$PROJ.tests.mlb" <<EOF
-src/src.mlb
-tests/$main.sml
-EOF
-
-		cat >"$PROJ/Makefile" <<EOF
-BIN := \$(CURDIR)/bin
-SRC := \$(CURDIR)/src
-TESTS := \$(CURDIR)/tests
-
-APP := \$(BIN)/$PROJ
-TESTER := \$(BIN)/testall
-
-MLTON_FLAGS := $MLTON_FLAGS
-
-all: \$(APP) \$(TESTER)
-.PHONY: test
-
-\$(APP): \$(SRC)/*.sml
-	mlton \$(MLTON_FLAGS) -output \$@ $PROJ.mlb
-
-\$(TESTER): \$(SRC)/*.sml \$(TESTS)/*.sml
-	mlton \$(MLTON_FLAGS) -output \$@ $PROJ.tests.mlb
-
-test: \$(TESTER)
-	\$(TESTER)
-
-clean:
-	rm -f \$(BIN)/*
-EOF
+		shift
+		init_proj "$proj"
 		;;
 	esac
 	;;
@@ -220,49 +247,23 @@ EOF
 help | --help | -h)
 	shift
 	case "$1" in
-	setup)
-		cat <<EOF
-Initialize $CMD_NAME with the current user
-
-Usage: $CMD_NAME setup [OPTIONS]
-
-Options:
-	-d, --dest <dir>	Specify the directory to use as \$JINMORI_HOME (default: \$HOME/.jinmori)
-	-f, --force		Overwrite existing \$JINMORI_HOME
-	--no-modify-path	Prevent modifying the shell PATH variable
-EOF
-		;;
-	new)
-		cat <<EOF
-Create a new sml project
-
-Usage: $CMD_NAME new PROJECT
-
-Caveats:
-	PROJECT must only contain ASCII alphabets.
-	This is because the project name is used to define some boilerplate code,
-	and sml only (officially) supports ASCII.
-EOF
-		;;
-	"")
-		usage
-		;;
+	setup) usage__setup ;;
+	new) usage__new ;;
+	"") usage ;;
 	*)
 		echo "Error: Unknown command '$1'" >&2
 		exit 1
 		;;
 	esac
 	;;
+"") usage ;;
 --version)
 	shift
 	echo "$CMD_VERSION"
 	;;
-"")
-	usage
-	;;
 *)
 	echo "Error: Unknown command or flag '$1'" >&2
-	usage
+	echo "Try $CMD_NAME --help to see instructions" >&2
 	exit 1
 	;;
 esac
