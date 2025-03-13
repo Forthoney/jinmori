@@ -34,6 +34,8 @@ jobs:
 
       - name: Install dependencies
         run: |
+          sudo apt-get update
+          sudo apt-get install attr
           curl -L -o try-latest.tgz https://github.com/binpash/try/releases/download/latest/try-latest.tgz
           tar -xzf try-latest.tgz
           cd try-0.2.0
