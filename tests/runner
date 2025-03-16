@@ -1,0 +1,16 @@
+#!/bin/sh
+
+# This crazy TOP variable hack is taken from try's test suite
+JINMORI_TOP="${JINMORI_TOP:-$(git rev-parse --show-toplevel --show-superproject-working-tree 2>/dev/null || echo "${0%/*}")}"
+JINMORI="$JINMORI_TOP/jinmori"
+TRY="$JINMORI_TOP/try"
+TESTS="$JINMORI_TOP/tests"
+
+if [ -d "$HOME/.jinmori" ]; then
+	echo "Please clean out the $HOME/.jinmori directory before tests" >&2
+	echo "Exiting..." >&2
+	exit 1
+fi
+
+. "$TESTS/setup_blank.sh"
+. "$TESTS/new_project_ascii_lower.sh"
