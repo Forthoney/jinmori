@@ -20,10 +20,9 @@ jobs:
         run: sudo apt-get install -y shfmt
 
       - name: Run shfmt
-        run: shfmt -d jinmori
-
+        run: shfmt -d jinmori && shfmt -d tests/runner
       - name: Run shellcheck
-        run: shellcheck jinmori
+        run: shellcheck jinmori && shellcheck tests/runner
 
   test:
     runs-on: ubuntu-latest
