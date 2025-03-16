@@ -211,7 +211,7 @@ main() {
 		short="d:f"
 		long="dest:,force,no-modify-path"
 
-		if ! OPTIONS=$(getopt --options "$short" --longoptions "$long" --name "$CMD_NAME" -- "$@" ); then
+		if ! OPTIONS=$(getopt --options "$short" --longoptions "$long" --name "$CMD_NAME" -- "$@"); then
 			exit 1
 		fi
 		eval set -- "$OPTIONS"
