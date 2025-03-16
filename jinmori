@@ -2,6 +2,7 @@
 
 CMD_NAME="jinmori"
 CMD_VERSION="0.1.0"
+JINMORI_HOME="${JINMORI_HOME:-$HOME/.jinmori}"
 
 usage() {
 	cat <<EOF
@@ -10,12 +11,13 @@ A Standard ML package manager focusing on MLton
 Usage: $CMD_NAME [OPTIONS] [COMMAND]
 
 Options:
-	--help			Print help (this page)
-	--version 		Print version info
+	--help		Print help (this page)
+	--version	Print version info
 
 Commands:
-	setup	Initialize $CMD_NAME with the current user
+	setup	Eagerly setup $CMD_NAME and add to path
 	new	Create a new sml project
+	add	Add dependencies to a project
 
 See '$CMD_NAME help <command>' for more information on a specific command.
 EOF
@@ -38,13 +40,21 @@ usage__new() {
 	cat <<NEW
 Create a new sml project
 
-Usage: $CMD_NAME new PROJECT
+Usage: $CMD_NAME new <PROJECT>
 
 Caveats:
 	PROJECT must only contain ASCII alphabets.
 	This is partially because the project name is used to define some boilerplate code,
 	and sml only (officially) supports ASCII.
 NEW
+}
+
+usage__add() {
+	cat <<ADD
+Add dependencies to a project
+
+Usage: $CMD_NAME add <DEP> ...
+ADD
 }
 
 update_path() {
@@ -64,10 +74,10 @@ update_path() {
 $start_mark
 
 case ":\$PATH:" in
-*:$HOME/.jinmori/bin:*)
+*:$JINMORI_HOME/bin:*)
 	;;
 *)
-	export PATH=$HOME/.jinmori/bin\${PATH:+:\${PATH}}
+	export PATH=$JINMORI_HOME/bin\${PATH:+:\${PATH}}
 	;;
 esac
 
@@ -106,10 +116,10 @@ TEST
 $main.sml
 SRC
 
-	cat >"$proj/$proj.mlb" <<-"MAIN_MLB"
-		src/src.mlb
-		src/Exec.sml
-	MAIN_MLB
+	cat >"$proj/$proj.mlb" <<"MAIN_MLB"
+src/src.mlb
+src/Exec.sml
+MAIN_MLB
 
 	cat >"$proj/$proj.tests.mlb" <<EOF
 src/src.mlb
@@ -143,12 +153,28 @@ clean:
 EOF
 }
 
+symlink_deps () {
+	dir="$1"
+	shift
+
+	deps="$JINMORI_HOME/deps"
+	for target in "$@"; do
+		if [ ! -d "$deps/$target" ] &&\
+			 ! git clone "https://$target.git" "$deps/$target"; then
+			echo "Error: could not find package $target" >&2
+			return 1
+		fi
+		mkdir -p "$dir/lib/$(dirname "$target")"
+		ln -s  "$deps/$target" "$dir/lib/$target"
+	done
+	return 0
+}
+
 CMD_PATH="$0"
 
 case "$1" in
 setup)
 	shift
-	DIR="$HOME/.jinmori"
 	FORCE=0
 	PATHAPPEND=1
 
@@ -160,7 +186,7 @@ setup)
 	while true; do
 		case "$1" in
 		-d | --dest)
-			DIR="$2"
+			JINMORI_HOME="$2"
 			shift 2
 			;;
 		-f | --force)
@@ -244,11 +270,33 @@ new)
 	esac
 	;;
 
+add)
+	shift
+	if [ -z "$1" ]; then
+		echo "Error: Dependencies not specified" >&2
+		exit 1
+	fi
+
+	dir=$(pwd)
+	while [ "$dir" != "/" ]; do
+		if [ -f "$dir/sml.pkg" ]; then
+			symlink_deps "$dir" "$@"
+			exit "$?"
+		else
+			dir=$(dirname "$dir")
+		fi
+	done
+
+	echo "Error: could not find sml.pkg at the current working directory or any of its parent directory" >&2
+	exit 1
+	;;
+
 help | --help | -h)
 	shift
 	case "$1" in
 	setup) usage__setup ;;
 	new) usage__new ;;
+	add) usage__add ;;
 	"") usage ;;
 	*)
 		echo "Error: Unknown command '$1'" >&2
@@ -256,11 +304,8 @@ help | --help | -h)
 		;;
 	esac
 	;;
+--version) echo "$CMD_NAME v$CMD_VERSION" ;;
 "") usage ;;
---version)
-	shift
-	echo "$CMD_VERSION"
-	;;
 *)
 	echo "Error: Unknown command or flag '$1'" >&2
 	echo "Try $CMD_NAME --help to see instructions" >&2
