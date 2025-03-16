@@ -240,11 +240,11 @@ main() {
 		done
 
 		tmp_path=""
-		if [ -d "$DIR" ]; then
+		if [ -d "$JINMORI_HOME" ]; then
 			if [ "$FORCE" -eq 1 ]; then
 				rm -rf "$DIR"
 			else
-				echo "Directory $DIR already exists. You may have set up $CMD_NAME already."
+				echo "Directory $JINMORI_HOME already exists. You may have set up $CMD_NAME already."
 				printf "Do you want to remove the existing installation and reinstall? (y/N) "
 
 				read -r response
@@ -257,16 +257,16 @@ main() {
 					rm -rf "$DIR"
 					;;
 				*)
-					echo "Aborting. $DIR was not modified." >&2
+					echo "Aborting. $JINMORI_HOME was not modified." >&2
 					exit 1
 					;;
 				esac
 			fi
 		fi
 
-		mkdir -p "$DIR/bin" "$DIR/deps"
-		echo "Initialized jinmori directory at $DIR" >&2
-		cp -- "$CMD_PATH" "$DIR/bin/$CMD_NAME"
+		mkdir -p "$JINMORI_HOME/bin" "$JINMORI_HOME/deps"
+		echo "Initialized jinmori home directory at $JINMORI_HOME" >&2
+		cp -- "$CMD_PATH" "$JINMORI_HOME/bin/$CMD_NAME" # This script is technically not a binary, but it's more convenient this way
 		if [ -n "$tmp_path" ]; then
 			rm --force "$tmp_path"
 		fi
