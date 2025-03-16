@@ -2,7 +2,7 @@
 `./runner`
 
 ## Writing tests
-The tests are contained in files with the `.tst` extention.
+The tests are contained in files with the `.test` extention.
 The first three lines of these files contain the
 1. Description of the test
 2. Command to run
