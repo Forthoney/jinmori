@@ -6,11 +6,20 @@ JINMORI="$JINMORI_TOP/jinmori"
 TRY="$JINMORI_TOP/try"
 TESTS="$JINMORI_TOP/tests"
 
+
+save=""
 if [ -d "$HOME/.jinmori" ]; then
-	echo "Please clean out the $HOME/.jinmori directory before tests" >&2
-	echo "Exiting..." >&2
-	exit 1
+	echo "Existing jinmori installation found at $HOME/.jinmori" >&2
+	save=$(mktemp -d)
+	mv "$HOME/.jinmori" "$save"
+	echo "Temporarily moving $HOME/.jinmori to $save. We'll try to restore it at the end, but if something goes wrong, you can find it there" >&2
 fi
 
 . "$TESTS/setup_blank.sh"
 . "$TESTS/new_project_ascii_lower.sh"
+
+if [ -n "$save" ]; then
+	mv "$save/.jinmori" "$HOME"
+	echo "Restored original jinmori installation" >&2
+	rmdir "$save"
+fi
