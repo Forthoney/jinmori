@@ -208,7 +208,10 @@ main() {
 		FORCE=0
 		PATHAPPEND=1
 
-		if ! OPTIONS=$(getopt --options d:f --longoptions dest:,force,no-modify-path -- "$@"); then
+		short="d:f"
+		long="dest:,force,no-modify-path"
+
+		if ! OPTIONS=$(getopt --options "$short" --longoptions "$long" --name "$CMD_NAME" -- "$@" ); then
 			exit 1
 		fi
 		eval set -- "$OPTIONS"
@@ -232,7 +235,7 @@ main() {
 				break
 				;;
 			*)
-				echo "Unknown option '$1'" >&2
+				echo "Error: Unknown option '$1'" >&2
 				usage
 				exit 1
 				;;
