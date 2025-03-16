@@ -3,6 +3,7 @@
 CMD_NAME="jinmori"
 CMD_VERSION="0.1.0"
 JINMORI_HOME="${JINMORI_HOME:-$HOME/.jinmori}"
+VERBOSE=0
 
 usage() {
 	cat <<EOF
@@ -153,162 +154,223 @@ clean:
 EOF
 }
 
-symlink_deps () {
-	dir="$1"
+__cond_log() {
+	level="$1"
 	shift
+	if [ "$VERBOSE" -ge "$level" ]; then
+		echo "$@" 2>&1
+	fi
+}
 
+info_log() {
+	__cond_log 1 "INFO: " "$@"
+}
+
+dbg_log() {
+	__cond_log 2 "DBG: " "$@"
+}
+
+symlink_deps() {
 	deps="$JINMORI_HOME/deps"
-	for target in "$@"; do
-		if [ ! -d "$deps/$target" ] &&\
-			 ! git clone "https://$target.git" "$deps/$target"; then
+	project_dir="$1"
+	target="$2"
+
+	if [ ! -d "$deps/$target" ]; then
+		info_log "$target not present. Downloading from github"
+		if git clone "https://$target.git" "$deps/$target" >/dev/null 2>&1; then
+			tail -n +4 "$deps/$target/sml.pkg" |
+				head -n -1 |
+				awk '{$1=$1;print $1}' |
+				while IFS= read -r transitive_dep; do
+					dbg_log "Detected transitive dependency $transitive_dep of $target"
+					if ! symlink_deps "$deps/$target" "$transitive_dep"; then
+						exit "$?"
+					fi
+				done
+		else
 			echo "Error: could not find package $target" >&2
 			return 1
 		fi
-		mkdir -p "$dir/lib/$(dirname "$target")"
-		ln -s  "$deps/$target" "$dir/lib/$target"
-	done
+	fi
+
+	mkdir -p "$project_dir/lib/$(dirname "$target")"
+	ln -s "$deps/$target" "$project_dir/lib/$target"
+
 	return 0
 }
 
 CMD_PATH="$0"
 
-case "$1" in
-setup)
-	shift
-	FORCE=0
-	PATHAPPEND=1
+main() {
+	case "$1" in
+	setup)
+		shift
+		FORCE=0
+		PATHAPPEND=1
 
-	if ! OPTIONS=$(getopt --options d:f --longoptions dest:,force,no-modify-path -- "$@"); then
-		exit 1
-	fi
-	eval set -- "$OPTIONS"
-
-	while true; do
-		case "$1" in
-		-d | --dest)
-			JINMORI_HOME="$2"
-			shift 2
-			;;
-		-f | --force)
-			FORCE=1
-			shift
-			;;
-		--no-modify-path)
-			PATHAPPEND=0
-			shift
-			;;
-		--)
-			shift
-			break
-			;;
-		*)
-			echo "Unknown option '$1'" >&2
-			usage
+		if ! OPTIONS=$(getopt --options d:f --longoptions dest:,force,no-modify-path -- "$@"); then
 			exit 1
-			;;
-		esac
-	done
+		fi
+		eval set -- "$OPTIONS"
 
-	tmp_path=""
-	if [ -d "$DIR" ]; then
-		if [ "$FORCE" -eq 1 ]; then
-			rm -rf "$DIR"
-		else
-			echo "Directory $DIR already exists. You may have set up $CMD_NAME already."
-			printf "Do you want to remove the existing installation and overwrite? (y/N) "
-
-			read -r response
-			case "$response" in
-			[yY][eE][sS] | [yY])
-				tmp_path=$(mktemp)
-				cp -p -- "$CMD_PATH" "$tmp_path"
-				CMD_PATH="$tmp_path"
-				rm -rf "$DIR"
+		while true; do
+			case "$1" in
+			-d | --dest)
+				JINMORI_HOME="$2"
+				shift 2
+				;;
+			-f | --force)
+				FORCE=1
+				shift
+				;;
+			--no-modify-path)
+				PATHAPPEND=0
+				shift
+				;;
+			--)
+				shift
+				break
 				;;
 			*)
-				echo "Aborting. $DIR was not modified." >&2
+				echo "Unknown option '$1'" >&2
+				usage
 				exit 1
 				;;
 			esac
+		done
+
+		tmp_path=""
+		if [ -d "$DIR" ]; then
+			if [ "$FORCE" -eq 1 ]; then
+				rm -rf "$DIR"
+			else
+				echo "Directory $DIR already exists. You may have set up $CMD_NAME already."
+				printf "Do you want to remove the existing installation and reinstall? (y/N) "
+
+				read -r response
+				case "$response" in
+				[yY][eE][sS] | [yY])
+					tmp_path=$(mktemp)
+					cp --preserve -- "$CMD_PATH" "$tmp_path"
+					dbg_log "Copied jinmori command to $tmp_path"
+					CMD_PATH="$tmp_path"
+					rm -rf "$DIR"
+					;;
+				*)
+					echo "Aborting. $DIR was not modified." >&2
+					exit 1
+					;;
+				esac
+			fi
 		fi
-	fi
 
-	mkdir -p "$DIR/bin" "$DIR/deps"
-	echo "Initialized jinmori directory at $DIR" >&2
-	cp -- "$CMD_PATH" "$DIR/bin/$CMD_NAME"
-	if [ -n "$tmp_path" ]; then
-		rm --force "$tmp_path"
-	fi
+		mkdir -p "$DIR/bin" "$DIR/deps"
+		echo "Initialized jinmori directory at $DIR" >&2
+		cp -- "$CMD_PATH" "$DIR/bin/$CMD_NAME"
+		if [ -n "$tmp_path" ]; then
+			rm --force "$tmp_path"
+		fi
 
-	if [ "$PATHAPPEND" -eq 1 ]; then
-		update_path
-	fi
-	;;
-
-new)
-	shift
-	case "$1" in
-	"")
-		echo "Error: No project name provided." >&2
-		exit 1
+		if [ "$PATHAPPEND" -eq 1 ]; then
+			update_path
+		fi
 		;;
-	*[!A-Za-z]*)
-		echo "Error: Project name must only contain ASCII alphabets." >&2
-		exit 1
-		;;
-	*)
-		proj="$1"
-		main=$(echo "$proj" | awk '{ $1 = toupper(substr($1, 1, 1)) substr($1, 2); print }')
 
-		if ! mkdir -p "$proj/src" "$proj/tests" "$proj/bin" 2>/dev/null; then
-			echo "Error: Destination \`$proj\` already exists." >&2
+	new)
+		shift
+		case "$1" in
+		"")
+			echo "Error: No project name provided." >&2
+			exit 1
+			;;
+		*[!A-Za-z]*)
+			echo "Error: Project name must only contain ASCII alphabets." >&2
+			exit 1
+			;;
+		*)
+			proj="$1"
+			main=$(echo "$proj" | awk '{ $1 = toupper(substr($1, 1, 1)) substr($1, 2); print }')
+
+			if ! mkdir -p "$proj/src" "$proj/tests" "$proj/bin" 2>/dev/null; then
+				echo "Error: Destination \`$proj\` already exists." >&2
+				exit 1
+			fi
+			shift
+			init_proj "$proj"
+			;;
+		esac
+		;;
+
+	add)
+		shift
+		if [ -z "$1" ]; then
+			echo "Error: Dependencies not specified" >&2
 			exit 1
 		fi
-		shift
-		init_proj "$proj"
-		;;
-	esac
-	;;
 
-add)
-	shift
-	if [ -z "$1" ]; then
-		echo "Error: Dependencies not specified" >&2
+		project_dir=$(pwd)
+		while [ "$project_dir" != "/" ]; do
+			if [ -f "$project_dir/sml.pkg" ]; then
+				dbg_log "Project directory found at $project_dir"
+				for target in "$@"; do
+					info_log "Detected top level dependency: $target"
+					symlink_deps "$project_dir" "$target"
+					exit "$?"
+				done
+			else
+				dir=$(dirname "$dir")
+			fi
+		done
+
+		echo "Error: could not find sml.pkg at the current working directory or any of its parent directory" >&2
 		exit 1
-	fi
+		;;
+	--verbose)
+		shift
+		case "$1" in
+		0)
+			VERBOSE=0
+			shift
+			main "$@"
+			;;
+		"" | 1)
+			VERBOSE=1
+			shift
+			main "$@"
+			;;
+		2)
+			VERBOSE=2
+			shift
+			main "$@"
+			;;
+		*)
+			echo "Error: invalid verbosity level $1"
+			exit 1
+			;;
+		esac
+		;;
 
-	dir=$(pwd)
-	while [ "$dir" != "/" ]; do
-		if [ -f "$dir/sml.pkg" ]; then
-			symlink_deps "$dir" "$@"
-			exit "$?"
-		else
-			dir=$(dirname "$dir")
-		fi
-	done
-
-	echo "Error: could not find sml.pkg at the current working directory or any of its parent directory" >&2
-	exit 1
-	;;
-
-help | --help | -h)
-	shift
-	case "$1" in
-	setup) usage__setup ;;
-	new) usage__new ;;
-	add) usage__add ;;
+	help | --help | -h)
+		shift
+		case "$1" in
+		setup) usage__setup ;;
+		new) usage__new ;;
+		add) usage__add ;;
+		"") usage ;;
+		*)
+			echo "Error: Unknown command '$1'" >&2
+			exit 1
+			;;
+		esac
+		;;
+	--version) echo "$CMD_NAME v$CMD_VERSION" ;;
 	"") usage ;;
 	*)
-		echo "Error: Unknown command '$1'" >&2
+		echo "Error: Unknown command or flag '$1'" >&2
+		echo "Try $CMD_NAME --help to see instructions" >&2
 		exit 1
 		;;
 	esac
-	;;
---version) echo "$CMD_NAME v$CMD_VERSION" ;;
-"") usage ;;
-*)
-	echo "Error: Unknown command or flag '$1'" >&2
-	echo "Try $CMD_NAME --help to see instructions" >&2
-	exit 1
-	;;
-esac
+}
+
+main "$@"
