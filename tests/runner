@@ -59,6 +59,7 @@ if [ -d "$HOME/.jinmori" ]; then
 	echo "Temporarily moving $HOME/.jinmori to $SAVE. We'll try to restore it at the end, but if something goes wrong, you can find it there" >&2
 fi
 
+errs=0
 for test in "$TESTS"/*.test; do
 	get_nth_line 1 "$test" >&2
 	printf "...\t" >&2
@@ -72,5 +73,10 @@ for test in "$TESTS"/*.test; do
 		echo "Success" >&2
 	else
 		echo "Fail" >&2
+		errs=$((errs + 1))
 	fi
 done
+
+if errs; then
+	exit 1
+fi

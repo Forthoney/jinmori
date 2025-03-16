@@ -45,3 +45,6 @@ jobs:
           ./configure
           make
           sudo make install
+
+      - name: Run tests
+        run: tests/runner
