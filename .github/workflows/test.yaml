@@ -20,11 +20,9 @@ jobs:
         run: sudo apt-get install -y shfmt
 
       - name: Run shfmt
-        run: |
-          find . -type f -exec sh -c 'head -n1 "$1" | grep -q "^#!/bin/sh"' sh {} \; -print0 | xargs -0 shfmt -d
+        run: shfmt -d jinmori && shfmt -d tests/runner
       - name: Run shellcheck
-        run: |
-          find . -type f -exec sh -c 'head -n1 "$1" | grep -q "^#!/bin/sh"' sh {} \; -print0 | xargs -0 shellcheck
+        run: shellcheck jinmori && shellcheck tests/runner
 
   test:
     runs-on: ubuntu-latest
