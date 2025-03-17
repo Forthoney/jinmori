@@ -151,7 +151,12 @@ test: \$(TESTER)
 
 clean:
 	rm -f \$(BIN)/*
+
+deps:
+	jinmori add -r requirements.txt
 EOF
+
+	touch "$proj/requirements.txt"
 }
 
 __cond_log() {
@@ -170,6 +175,12 @@ dbg_log() {
 	__cond_log 2 "DBG: " "$@"
 }
 
+smlpkg_preprocess() {
+	tail -n +4 "$1" |
+	head -n -1 |
+	awk '{$1=$1;print $1}'
+}
+
 symlink_deps() {
 	deps="$JINMORI_HOME/deps"
 	project_dir="$1"
@@ -178,15 +189,28 @@ symlink_deps() {
 	if [ ! -d "$deps/$target" ]; then
 		info_log "$target not present. Downloading from github"
 		if git clone "https://$target.git" "$deps/$target" >/dev/null 2>&1; then
-			tail -n +4 "$deps/$target/sml.pkg" |
-				head -n -1 |
-				awk '{$1=$1;print $1}' |
+			if [ -f "$deps/$target/requirements.txt" ]; then
+				dbg_log "Found requirements.txt of $target"
+
 				while IFS= read -r transitive_dep; do
 					dbg_log "Detected transitive dependency $transitive_dep of $target"
 					if ! symlink_deps "$deps/$target" "$transitive_dep"; then
-						exit "$?"
+						return "$?"
+					fi
+				done < "$deps/$target/requirements.txt"
+			elif [ -f "$deps/$target/sml.pkg" ]; then
+				dbg_log "Found sml.pkg of $target"
+
+				smlpkg_preprocess "$deps/$target/sml.pkg" |
+				while IFS= read -r transitive_dep; do
+					dbg_log "Detected transitive dependency $transitive_dep of $target"
+					if ! symlink_deps "$deps/$target" "$transitive_dep"; then
+						return "$?"
 					fi
 				done
+			else
+				dbg_log "No transitive dependency detected"
+			fi
 		else
 			echo "Error: could not find package $target" >&2
 			return 1
@@ -294,10 +318,13 @@ main() {
 			proj="$1"
 			main=$(echo "$proj" | awk '{ $1 = toupper(substr($1, 1, 1)) substr($1, 2); print }')
 
-			if ! mkdir -p "$proj/src" "$proj/tests" "$proj/bin" 2>/dev/null; then
+			if ! mkdir  "$proj" 2>/dev/null; then
 				echo "Error: Destination \`$proj\` already exists." >&2
 				exit 1
 			fi
+
+			mkdir "$proj/src" "$proj/tests" "$proj/bin" "$proj/lib"
+
 			shift
 			init_proj "$proj"
 			;;
@@ -306,28 +333,67 @@ main() {
 
 	add)
 		shift
-		if [ -z "$1" ]; then
-			echo "Error: Dependencies not specified" >&2
+		REQ_TXT=""
+		short="r:"
+		long="read-file:"
+
+		if ! OPTIONS=$(getopt --options "$short" --longoptions "$long" --name "$CMD_NAME" -- "$@"); then
+			exit 1
+		fi
+		eval set -- "$OPTIONS"
+
+		while true; do
+			case "$1" in
+			-r | --from-file)
+				REQ_TXT="$2"
+				shift 2
+				;;
+			--)
+				shift
+				break;;
+			*)
+				;;
+			esac
+		done
+		
+		if [ -z "$1" ] && [ -z "$REQ_TXT" ]; then
+			echo "Error: No dependencies specified" >&2
 			exit 1
 		fi
 
 		project_dir=$(pwd)
 		while [ "$project_dir" != "/" ]; do
-			if [ -f "$project_dir/sml.pkg" ]; then
-				dbg_log "Project directory found at $project_dir"
-				for target in "$@"; do
-					info_log "Detected top level dependency: $target"
-					symlink_deps "$project_dir" "$target"
-					exit "$?"
-				done
-			else
-				dir=$(dirname "$dir")
+			if ! [ -f "$project_dir/sml.pkg" ] &&
+			   ! [ -f "$project_dir/requirements.txt" ]; then
+				project_dir=$(dirname "$project_dir")
+				continue
 			fi
+
+			
+			dbg_log "Project directory found at $project_dir"
+
+			if [ -n "$REQ_TXT" ] && [ -f "$REQ_TXT" ]; then
+				while IFS= read -r target; do
+					info_log "Detected top level dependency: $target"
+					if ! symlink_deps "$project_dir" "$target"; then
+						exit "$?"
+					fi
+				done < "$REQ_TXT"
+			fi
+
+			for target in "$@"; do
+				info_log "Detected top level dependency: $target"
+				if ! symlink_deps "$project_dir" "$target"; then
+					exit "$?"
+				fi
+			done
+			exit 0
 		done
 
 		echo "Error: could not find sml.pkg at the current working directory or any of its parent directory" >&2
 		exit 1
 		;;
+
 	--verbose)
 		shift
 		case "$1" in

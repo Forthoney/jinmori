@@ -38,8 +38,14 @@ checkexpect() {
 
 	yes no | "$TRY" "$CMD" >"$ACTUAL" 2>&1 # Don't actually commit when prompted
 
-	if [ "$?" -eq "$EXPECTED_EXIT_CODE" ] &&
-		sed -n "/(.*)/{$pat}" <"$ACTUAL" | sort | diff -wB "$EXPECTED" -; then
+	ACTUAL_EXIT_CODE="$?"
+	
+	if [ "$ACTUAL_EXIT_CODE" -ne "$EXPECTED_EXIT_CODE" ]; then
+		return 1
+	fi
+
+
+	if sed -n "/(.*)/{$pat}" <"$ACTUAL" | sort | diff -wB "$EXPECTED" -; then
 		return 0
 	else
 		return 1
@@ -77,6 +83,6 @@ for test in "$TESTS"/*.test; do
 	fi
 done
 
-if errs; then
+if [ "$errs" -gt 0 ]; then
 	exit 1
 fi

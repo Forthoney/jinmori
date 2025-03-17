@@ -5,9 +5,11 @@ $JINMORI new Project
 (created dir)	$PWD/Project/src
 (created dir)	$PWD/Project/tests
 (created dir)	$PWD/Project/bin
+(created dir)	$PWD/Project/lib
 (added)	$PWD/Project/Makefile
 (added)	$PWD/Project/Project.mlb
 (added)	$PWD/Project/Project.tests.mlb
+(added)	$PWD/Project/requirements.txt
 (added)	$PWD/Project/src/src.mlb
 (added)	$PWD/Project/src/Project.sml
 (added)	$PWD/Project/src/Exec.sml
