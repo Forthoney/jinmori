@@ -32,7 +32,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install attr
           curl -L -o /tmp/try-latest.tgz https://github.com/binpash/try/releases/download/latest/try-latest.tgz
-          tar -xzf try-latest.tgz -C "$HOME"
+          tar -xzf /tmp/try-latest.tgz -C "$HOME"
           cd "$HOME/try-0.2.0"
           ./configure
           make
