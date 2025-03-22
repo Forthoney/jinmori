@@ -35,9 +35,9 @@ checkexpect() {
 	reformat="(\2)\t\1"             # action followed by path separated with tab
 	pat="s/$path_capture_group $action_capture_group/$reformat/p"
 
-	overlay=$("$JINMORI_TOP/try" -n "$CMD")
+	overlay=$(try -n "$CMD")
 	ACTUAL_EXIT_CODE="$?"
-	"$JINMORI_TOP/try" summary "$overlay" >"$ACTUAL" 2>/dev/null
+	try summary "$overlay" >"$ACTUAL" 2>/dev/null
 
 	if [ "$ACTUAL_EXIT_CODE" -ne "$EXPECTED_EXIT_CODE" ]; then
 		cat "$ACTUAL" >&2

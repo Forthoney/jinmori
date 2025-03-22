@@ -28,10 +28,15 @@ jobs:
           mlton
 
           sudo apt-get update
-          sudo apt-get install attr 
-          curl -L -o try https://raw.githubusercontent.com/binpash/try/main/try
-          chmod +x try
-          ./try --version
+          sudo apt-get install attr mergerfs
+          curl -L -o /tmp/try-latest.tgz https://github.com/binpash/try/releases/download/latest/try-latest.tgz
+          tar -xzf /tmp/try-latest.tgz -C "$HOME"
+          cd "$HOME/try-0.2.0"
+          ./configure
+          make
+          sudo make install
+          try --version
+
 
       - name: Build binaries
         run: |
