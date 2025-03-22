@@ -38,6 +38,7 @@ checkexpect() {
 	overlay=$(try -n "$CMD" 2>/dev/null)
 	ACTUAL_EXIT_CODE="$?"
 	overlay=$(echo "$overlay" | cut -d'/' -f2-)
+	echo "$overlay"
 	try summary "$overlay" >"$ACTUAL"
 
 	if [ "$ACTUAL_EXIT_CODE" -ne "$EXPECTED_EXIT_CODE" ]; then
