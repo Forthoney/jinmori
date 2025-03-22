@@ -43,4 +43,6 @@ jobs:
         run: mkdir -p bin
 
       - name: Run tests
-        run: make test
+        run: |
+          set +x
+          make test
