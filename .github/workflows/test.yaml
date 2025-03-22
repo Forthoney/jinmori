@@ -37,5 +37,8 @@ jobs:
           make
           sudo make install
 
+      - name: Create build directory
+        run: mkdir -p bin
+
       - name: Run tests
         run: make test && tests/end2end/runner
