@@ -35,6 +35,10 @@ checkexpect() {
 	reformat="(\2)\t\1"             # action followed by path separated with tab
 	pat="s/$path_capture_group $action_capture_group/$reformat/p"
 
+	echo "================"
+	echo "$CMD"
+	echo "================"
+
 	yes no | try "$CMD" >"$ACTUAL" 2>&1 # Don't actually commit when prompted
 
 	ACTUAL_EXIT_CODE="$?"
