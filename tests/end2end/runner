@@ -36,6 +36,7 @@ checkexpect() {
 	pat="s/$path_capture_group $action_capture_group/$reformat/p"
 
 	overlay=$(try -n "$CMD")
+	echo "$overlay"
 	ACTUAL_EXIT_CODE="$?"
 	try summary "$overlay" >"$ACTUAL" 2>/dev/null
 
