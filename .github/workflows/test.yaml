@@ -27,8 +27,6 @@ jobs:
           sudo make -C "$HOME/mlton-20241230-1.amd64-linux.ubuntu-24.04_glibc2.39" install
           mlton
 
-      - name: Install try
-        run: |
           sudo apt-get update
           sudo apt-get install attr
           curl -L -o /tmp/try-latest.tgz https://github.com/binpash/try/releases/download/latest/try-latest.tgz
@@ -43,6 +41,5 @@ jobs:
         run: mkdir -p bin
 
       - name: Run tests
-        run: |
-          set +x
-          make test
+        run: make test
+        shell: sh
