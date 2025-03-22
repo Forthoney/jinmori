@@ -21,10 +21,8 @@ $(DBG): $(SOURCE)
 $(TESTER): $(SOURCE) $(TESTS)
 	mlton $(MLTON_FLAGS) $(DBG_FLAGS) -output $@ tests/jinmori.tests.mlb
 
-test: $(TESTER) $(DBG)
+unittest: $(TESTER)
 	$(TESTER)
-	set +e
-	tests/end2end/runner
 
 install: $(RELEASE)
 	@mkdir -p "$(HOME)/.jinmori" "$(HOME)/.jinmori/bin" "$(HOME)/.jinmori/pkgs"
