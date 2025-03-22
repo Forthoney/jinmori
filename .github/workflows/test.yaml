@@ -23,8 +23,8 @@ jobs:
       - name: Install dependencies
         run: |
           curl -L -o /tmp/mlton-2024.tgz https://github.com/MLton/mlton/releases/download/on-20241230-release/mlton-20241230-1.amd64-linux.ubuntu-24.04_glibc2.39.tgz
-          tar -xzf /tmp/mlton-2024.tgz -C "$HOME/mlton-2024"
-          sudo make -C "$HOME/mlton-2024" install
+          tar -xzf /tmp/mlton-2024.tgz -C "$HOME"
+          sudo make -C "$HOME/mlton-20241230-1.amd64-linux.ubuntu-24.04_glibc2.39" install
           mlton
 
       - name: Install try
@@ -32,7 +32,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install attr
           curl -L -o /tmp/try-latest.tgz https://github.com/binpash/try/releases/download/latest/try-latest.tgz
-          tar -xzf try-latest.tgz -C "$HOME/try-0.2.0"
+          tar -xzf try-latest.tgz -C "$HOME"
           cd "$HOME/try-0.2.0"
           ./configure
           make
