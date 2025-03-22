@@ -23,6 +23,7 @@ $(TESTER): $(SOURCE) $(TESTS)
 
 test: $(TESTER) $(DBG)
 	$(TESTER)
+	set +e
 	tests/end2end/runner
 
 install: $(RELEASE)
