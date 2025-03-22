@@ -1,0 +1,35 @@
+name: Main workflow
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Allow unprivileged user namespaces (for Ubuntu 24.04)
+        run: |
+          sudo sysctl kernel.apparmor_restrict_unprivileged_userns=0
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install attr
+          curl -L -o try-latest.tgz https://github.com/binpash/try/releases/download/latest/try-latest.tgz
+          tar -xzf try-latest.tgz
+          cd try-0.2.0
+          ./configure
+          make
+          sudo make install
+
+      - name: Run tests
+        run: make test && tests/end2end/runner

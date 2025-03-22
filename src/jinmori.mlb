@@ -1,0 +1,6 @@
+ann
+  "allowOrPats true"
+in
+  src.mlb
+  Main.sml
+end

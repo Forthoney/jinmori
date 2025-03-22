@@ -1,0 +1,89 @@
+#!/bin/sh
+
+# This crazy TOP variable hack is taken from try's test suite
+JINMORI_TOP="${JINMORI_TOP:-$(git rev-parse --show-toplevel --show-superproject-working-tree 2>/dev/null || echo "${0%/*}")}"
+JINMORI="$JINMORI_TOP/bin/jinmori.dbg"
+TRY="$JINMORI_TOP/try"
+TESTS="$JINMORI_TOP/tests/end2end"
+PWD="$(pwd)"
+export PWD JINMORI_TOP JINMORI TRY TESTS PWD
+
+EXPECTED=$(mktemp)
+ACTUAL=$(mktemp)
+SAVE=""
+
+cleanup() {
+	if [ -e "$EXPECTED" ]; then
+		rm -f "$EXPECTED"
+	fi
+
+	if [ -e "$ACTUAL" ]; then
+		rm -f "$ACTUAL"
+	fi
+
+	if [ -n "$SAVE" ]; then
+		mv "$SAVE/.jinmori" "$HOME"
+		echo "Restored original jinmori installation" >&2
+		rmdir "$SAVE"
+	fi
+}
+
+trap 'cleanup' EXIT
+
+checkexpect() {
+	path_capture_group="\(.*\)"     # capture group 1 - any chars
+	action_capture_group="(\(.*\))" # capture group 2 - any chars surrounded by parens
+	reformat="(\2)\t\1"             # action followed by path separated with tab
+	pat="s/$path_capture_group $action_capture_group/$reformat/p"
+
+	yes no | "$TRY" "$CMD" >"$ACTUAL" 2>&1 # Don't actually commit when prompted
+
+	ACTUAL_EXIT_CODE="$?"
+	
+	if [ "$ACTUAL_EXIT_CODE" -ne "$EXPECTED_EXIT_CODE" ]; then
+		cat "$ACTUAL" >&2
+		return 1
+	fi
+
+
+	if sed -n "/(.*)/{$pat}" <"$ACTUAL" | sort | diff -wB "$EXPECTED" -; then
+		return 0
+	else
+		return 1
+	fi
+}
+
+get_nth_line() {
+	n="$1"
+	file="$2"
+	awk 'NR==N { printf "%s", $0 }' N="$n" "$file"
+}
+
+if [ -d "$HOME/.jinmori" ]; then
+	echo "Existing jinmori installation found at $HOME/.jinmori" >&2
+	SAVE=$(mktemp -d)
+	mv "$HOME/.jinmori" "$SAVE"
+	echo "Temporarily moving $HOME/.jinmori to $SAVE. We'll try to restore it at the end, but if something goes wrong, you can find it there" >&2
+fi
+
+errs=0
+for test in "$TESTS"/*.test; do
+	get_nth_line 1 "$test" >&2
+	printf "...\t" >&2
+
+	CMD=$(get_nth_line 2 "$test")
+	EXPECTED_EXIT_CODE=$(get_nth_line 3 "$test")
+
+	tail -n +4 "$test" | envsubst | sort >"$EXPECTED"
+
+	if checkexpect; then
+		echo "Success" >&2
+	else
+		echo "Fail" >&2
+		errs=$((errs + 1))
+	fi
+done
+
+if [ "$errs" -gt 0 ]; then
+	exit 1
+fi

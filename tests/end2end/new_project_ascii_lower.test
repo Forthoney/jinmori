@@ -1,0 +1,18 @@
+Making a new project with all lowercase ascii project name
+$JINMORI new project
+0
+(created dir)	$PWD/project
+(created dir)	$PWD/project/src
+(created dir)	$PWD/project/tests
+(created dir)	$PWD/project/bin
+(created dir)	$PWD/project/lib
+
+(added)	$PWD/project/Makefile
+(added)	$PWD/project/requirements.txt
+
+(added)	$PWD/project/src/src.mlb
+(added)	$PWD/project/src/project.mlb
+(added)	$PWD/project/src/Main.sml
+
+(added)	$PWD/project/tests/Test.sml
+(added)	$PWD/project/tests/project.test.mlb
