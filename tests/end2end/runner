@@ -35,19 +35,14 @@ checkexpect() {
 	reformat="(\2)\t\1"             # action followed by path separated with tab
 	pat="s/$path_capture_group $action_capture_group/$reformat/p"
 
-	echo "================"
-	echo "$CMD"
-	echo "================"
-
-	yes no | "$JINMORI_TOP/try" "$CMD" >"$ACTUAL" 2>&1 # Don't actually commit when prompted
-
+	overlay=$("$JINMORI_TOP/try" -n "$CMD" 2>/dev/null)
 	ACTUAL_EXIT_CODE="$?"
-	
+	"$JINMORI_TOP/try" summary "$overlay" >"$ACTUAL" 2>/dev/null
+
 	if [ "$ACTUAL_EXIT_CODE" -ne "$EXPECTED_EXIT_CODE" ]; then
 		cat "$ACTUAL" >&2
 		return 1
 	fi
-
 
 	if sed -n "/(.*)/{$pat}" <"$ACTUAL" | sort | diff -wB "$EXPECTED" -; then
 		return 0

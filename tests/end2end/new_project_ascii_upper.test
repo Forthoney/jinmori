@@ -8,6 +8,7 @@ $JINMORI new Project
 (created dir)	$PWD/Project/lib
 (added)	$PWD/Project/Makefile
 (added)	$PWD/Project/requirements.txt
+(added)	$PWD/Project/.gitignore.txt
 
 (added)	$PWD/Project/src/src.mlb
 (added)	$PWD/Project/src/Project.mlb

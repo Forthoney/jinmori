@@ -9,6 +9,7 @@ $JINMORI new project
 
 (added)	$PWD/project/Makefile
 (added)	$PWD/project/requirements.txt
+(added)	$PWD/project/.gitignore.txt
 
 (added)	$PWD/project/src/src.mlb
 (added)	$PWD/project/src/project.mlb
