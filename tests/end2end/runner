@@ -39,7 +39,7 @@ checkexpect() {
 	echo "$CMD"
 	echo "================"
 
-	yes no | try "$CMD" >"$ACTUAL" 2>&1 # Don't actually commit when prompted
+	yes no | "$JINMORI_TOP/try" "$CMD" >"$ACTUAL" 2>&1 # Don't actually commit when prompted
 
 	ACTUAL_EXIT_CODE="$?"
 	
