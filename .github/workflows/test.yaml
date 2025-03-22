@@ -37,8 +37,10 @@ jobs:
           sudo make install
           try --version
 
-      - name: Create build directory
-        run: mkdir -p bin
+      - name: Build binaries
+        run: |
+          mkdir -p bin
+          make all
 
       - name: Run tests
         run: |
