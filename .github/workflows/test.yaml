@@ -24,7 +24,7 @@ jobs:
         run: |
           curl -L -o mlton-2024.tgz https://github.com/MLton/mlton/releases/download/on-20241230-release/mlton-20241230-1.amd64-linux.ubuntu-24.04_glibc2.39.tgz
           tar -xzf mlton-2024.tgz
-          cd mlton-20241230-1.amd64-linux.ubuntu-24.04_glibc2.39.tgz
+          cd mlton-20241230-1.amd64-linux.ubuntu-24.04_glibc2.39
           sudo make install
           cd
           
