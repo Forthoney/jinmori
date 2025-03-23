@@ -16,6 +16,8 @@ end
 
 functor CommandFn(Config: CONFIG): COMMAND =
 struct
+  fun eprint msg = TextIO.output (TextIO.stdErr, msg)
+  
   fun exec args =
     let
       fun loop [] ([], cfg) = Result.OK cfg
@@ -30,6 +32,6 @@ struct
           (case Config.run cfg of
              Result.OK _ => ()
            | Result.ERR e => print e)
-      | Result.ERR e => (print e; OS.Process.exit OS.Process.failure)
+      | Result.ERR e => (eprint e; OS.Process.exit OS.Process.failure)
     end
 end
