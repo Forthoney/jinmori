@@ -30,11 +30,13 @@ struct
         else
           ERR ("Invalid project name " ^ path)
     | nameParser (_, _) = ERR "No name given for project"
+
   val default = {proj = "", main = "", mltonFlags = ""}
   val parseOrder = [nameParser]
 
   fun run {proj, main, mltonFlags} =
     let
+      val _ = print ("==============RUN===============")
       val src = proj / "src"
       val tests = proj / "tests"
       val bin = proj / "bin"
