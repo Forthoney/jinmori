@@ -52,7 +52,8 @@ struct
       val gitignore = proj / ".gitignore"
     in
       OK
-        ( List.app OS.FileSys.mkDir [proj, src, tests, bin, lib]
+        (
+        (* List.app OS.FileSys.mkDir [proj, src, tests, bin, lib] *)
         (* ; writeFile (mainSml, String.concatWith "\n" *)
             (* [ "structure " ^ main ^ ":" *)
             (* , "sig" *)
