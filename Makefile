@@ -1,8 +1,10 @@
-RELEASE := bin/jinmori
-DBG := bin/jinmori.dbg
-TESTER := bin/testall
+BUILD_DIR ?= bin
 
-BUILD_FLAGS := 
+RELEASE := $(BUILD_DIR)/jinmori
+DBG := $(BUILD_DIR)/jinmori.dbg
+TESTER := $(BUILD_DIR)/testall
+
+BUILD_FLAGS :=
 DBG_FLAGS := -const 'Exn.keepHistory true'
 
 SOURCE := src/*.sml src/*.mlb
@@ -12,14 +14,17 @@ all: $(RELEASE) $(DBG) $(TESTER)
 
 .PHONY: test
 
-$(RELEASE): $(SOURCE)
-	mlton $(BUILD_FLAGS) -output $@ src/jinmori.mlb
+$(BUILD_DIR):
+	@mkdir -p $(BUILD_DIR)
 
-$(DBG): $(SOURCE)
-	mlton $(BUILD_FLAGS) $(DBG_FLAGS) -output $@ src/jinmori.mlb
+$(RELEASE): $(SOURCE) $(BUILD_DIR)
+	mlton -output $@ $(BUILD_FLAGS) src/jinmori.mlb
 
-$(TESTER): $(SOURCE) $(TESTS)
-	mlton $(MLTON_FLAGS) $(DBG_FLAGS) -output $@ tests/jinmori.tests.mlb
+$(DBG): $(SOURCE) $(BUILD_DIR)
+	mlton -output $@ $(BUILD_FLAGS) $(DBG_FLAGS) src/jinmori.mlb
+
+$(TESTER): $(SOURCE) $(TESTS) $(BUILD_DIR)
+	mlton -output $@ $(MLTON_FLAGS) $(DBG_FLAGS) tests/jinmori.tests.mlb
 
 test: $(TESTER) $(DBG)
 	$(TESTER)
@@ -28,7 +33,7 @@ test: $(TESTER) $(DBG)
 install: $(RELEASE)
 	@mkdir -p "$(HOME)/.jinmori" "$(HOME)/.jinmori/bin" "$(HOME)/.jinmori/pkgs"
 	@cp "$(RELEASE)" "$(HOME)/.jinmori/bin"
-	@echo "You may want to add '$(HOME)/.jinmori/bin' to your PATH"
+	@echo "You may want to add '$(HOME)/.jinmori/bin' to your PATH if you haven't done so already"
 
 clean:
 	rm -f $(RELEASE) $(DBG) $(TESTER)
