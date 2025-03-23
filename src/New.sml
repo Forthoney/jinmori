@@ -36,7 +36,6 @@ struct
 
   fun run {proj, main, mltonFlags} =
     let
-      val _ = print ("==============RUN===============")
       val src = proj / "src"
       val tests = proj / "tests"
       val bin = proj / "bin"
@@ -55,7 +54,7 @@ struct
     in
       OK
         (
-        List.app OS.FileSys.mkDir [proj, src, tests, bin, lib]
+          OS.FileSys.mkDir proj
         (* ; writeFile (mainSml, String.concatWith "\n" *)
             (* [ "structure " ^ main ^ ":" *)
             (* , "sig" *)
