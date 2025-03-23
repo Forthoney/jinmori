@@ -65,16 +65,16 @@ struct
             , "end"
             , "val () = print " ^ main ^ ".greeting"
             ])
-        ; writeFile (testSml, String.concatWith "\n"
-            [ "if true = false then"
-            , "  raise Fail \"The fabric of reality crumbles...\""
-            , "else"
-            , "  ()"
-            ])
-        ; writeFile (srcMlb, "$(SML_LIB)/basis/basis.mlb")
-        ; writeFile (projMlb, String.concatWith "\n" ["src.mlb", "Main.sml"])
-        ; writeFile
-            (testsMlb, String.concatWith "\n" ["../src/src.mlb", "Test.sml"])
+        (* ; writeFile (testSml, String.concatWith "\n" *)
+            (* [ "if true = false then" *)
+            (* , "  raise Fail \"The fabric of reality crumbles...\"" *)
+            (* , "else" *)
+            (* , "  ()" *)
+            (* ]) *)
+        (* ; writeFile (srcMlb, "$(SML_LIB)/basis/basis.mlb") *)
+        (* ; writeFile (projMlb, String.concatWith "\n" ["src.mlb", "Main.sml"]) *)
+        (* ; writeFile *)
+            (* (testsMlb, String.concatWith "\n" ["../src/src.mlb", "Test.sml"]) *)
         (* ; writeFile (makefile, String.concatWith "\n" *)
             (* [ "RELEASE := " ^ ("bin" / proj) *)
             (* , "DBG := " ^ ("bin" / (proj ^ ".dbg")) *)
