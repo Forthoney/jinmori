@@ -51,6 +51,7 @@ struct
       val makefile = proj / "Makefile"
       val reqs = proj / "requirements.txt"
       val gitignore = proj / ".gitignore"
+      val _ = print proj
     in
       OK
         (
