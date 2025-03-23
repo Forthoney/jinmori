@@ -53,18 +53,18 @@ struct
     in
       OK
         ( List.app OS.FileSys.mkDir [proj, src, tests, bin, lib]
-        ; writeFile (mainSml, String.concatWith "\n"
-            [ "structure " ^ main ^ ":"
-            , "sig"
-            , "  val greeting: string"
-            , "end ="
-            , "struct"
-            , "  val hello = \"Hello, \""
-            , "  val world = \"World!\""
-            , "  val greeting = hello ^ world ^ \"\\n\""
-            , "end"
-            , "val () = print " ^ main ^ ".greeting"
-            ])
+        (* ; writeFile (mainSml, String.concatWith "\n" *)
+            (* [ "structure " ^ main ^ ":" *)
+            (* , "sig" *)
+            (* , "  val greeting: string" *)
+            (* , "end =" *)
+            (* , "struct" *)
+            (* , "  val hello = \"Hello, \"" *)
+            (* , "  val world = \"World!\"" *)
+            (* , "  val greeting = hello ^ world ^ \"\\n\"" *)
+            (* , "end" *)
+            (* , "val () = print " ^ main ^ ".greeting" *)
+            (* ]) *)
         (* ; writeFile (testSml, String.concatWith "\n" *)
             (* [ "if true = false then" *)
             (* , "  raise Fail \"The fabric of reality crumbles...\"" *)
