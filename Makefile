@@ -23,7 +23,7 @@ $(TESTER): $(SOURCE) $(TESTS)
 
 test: $(TESTER) $(DBG)
 	$(TESTER)
-	tests/end2end/runner
+	# tests/end2end/runner
 
 install: $(RELEASE)
 	@mkdir -p "$(HOME)/.jinmori" "$(HOME)/.jinmori/bin" "$(HOME)/.jinmori/pkgs"

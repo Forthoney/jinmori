@@ -17,7 +17,7 @@ end
 functor CommandFn(Config: CONFIG): COMMAND =
 struct
   fun eprint msg = TextIO.output (TextIO.stdErr, msg)
-  
+
   fun exec args =
     let
       fun loop [] ([], cfg) = Result.OK cfg

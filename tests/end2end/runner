@@ -2,7 +2,7 @@
 
 # This crazy TOP variable hack is taken from try's test suite
 JINMORI_TOP="${JINMORI_TOP:-$(git rev-parse --show-toplevel --show-superproject-working-tree 2>/dev/null || echo "${0%/*}")}"
-JINMORI="$JINMORI_TOP/bin/jinmori"
+JINMORI="$JINMORI_TOP/bin/jinmori.dbg"
 TESTS="$JINMORI_TOP/tests/end2end"
 PWD="$(pwd)"
 export PWD JINMORI_TOP JINMORI TRY TESTS PWD
@@ -35,20 +35,19 @@ checkexpect() {
 	reformat="(\2)\t\1"             # action followed by path separated with tab
 	pat="s/$path_capture_group $action_capture_group/$reformat/p"
 
-	try -n "$CMD"
-	# try summary "/$overlay" >"$ACTUAL"
+	yes no | "$TRY" "$CMD" >"$ACTUAL" 2>&1 # Don't actually commit when prompted
+	ACTUAL_EXIT_CODE="$?"
 
-	# if [ "$ACTUAL_EXIT_CODE" -ne "$EXPECTED_EXIT_CODE" ]; then
-	# 	cat "$ACTUAL" >&2
-	# 	return 1
-	# fi
+	if [ "$ACTUAL_EXIT_CODE" -ne "$EXPECTED_EXIT_CODE" ]; then
+		cat "$ACTUAL" >&2
+		return 1
+	fi
 
-	# if sed -n "/(.*)/{$pat}" <"$ACTUAL" | sort | diff -wB "$EXPECTED" -; then
-	# 	return 0
-	# else
-	# 	return 1
-	# fi
-	return 0
+	if sed -n "/(.*)/{$pat}" <"$ACTUAL" | sort | diff -wB "$EXPECTED" -; then
+		return 0
+	else
+		return 1
+	fi
 }
 
 get_nth_line() {
