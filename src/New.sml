@@ -115,6 +115,6 @@ struct
         ; writeFile (gitignore, "lib/")
         ; touchFile reqs
         )
-      handle OS.SysErr (msg, _) => ERR "New project creation failed with error '" ^ msg ^ "'"
+      handle OS.SysErr (msg, _) => ERR ("New project creation failed with error '" ^ msg ^ "'")
     end
 end
