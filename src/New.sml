@@ -75,45 +75,45 @@ struct
         ; writeFile (projMlb, String.concatWith "\n" ["src.mlb", "Main.sml"])
         ; writeFile
             (testsMlb, String.concatWith "\n" ["../src/src.mlb", "Test.sml"])
-        ; writeFile (makefile, String.concatWith "\n"
-            [ "RELEASE := " ^ ("bin" / proj)
-            , "DBG := " ^ ("bin" / (proj ^ ".dbg"))
-            , "TESTER := " ^ ("bin" / "testall")
-            , ""
-            , "BUILD_FLAGS := " ^ mltonFlags
-            , "DBG_FLAGS := -const 'Exn.keepHistory true'"
-            , ""
-            , "SOURCE := "
-              ^ (String.concatWith " " ["src" / "*.sml", "src" / "*.mlb"])
-            , "TESTS := "
-              ^ (String.concatWith " " ["tests" / "*.sml", "tests" / "*.mlb"])
-            , ""
-            , "all: $(RELEASE) $(DBG) $(TESTER)"
-            , ""
-            , ".PHONY: test"
-            , ""
-            , "$(RELEASE): $(SOURCE)"
-            , "\tmlton $(BUILD_FLAGS) -output $@ " ^ ("src" / proj ^ ".mlb")
-            , ""
-            , "$(DBG): $(SOURCE)"
-            , "\tmlton $(BUILD_FLAGS) $(DBG_FLAGS) -output $@ "
-              ^ ("src" / proj ^ ".mlb")
-            , ""
-            , "$(TESTER): $(SOURCE) $(TESTS)"
-            , "\tmlton $(MLTON_FLAGS) $(DBG_FLAGS) -output $@ "
-              ^ ("tests" / proj ^ ".test.mlb")
-            , ""
-            , "test: $(TESTER)"
-            , "\t$(TESTER)"
-            , ""
-            , "clean:"
-            , "\trm -f $(BIN)/*"
-            , ""
-            , "deps:"
-            , "\tjinmori add -r requirements.txt"
-            ])
-        ; writeFile (gitignore, "lib/")
-        ; touchFile reqs
+        (* ; writeFile (makefile, String.concatWith "\n" *)
+            (* [ "RELEASE := " ^ ("bin" / proj) *)
+            (* , "DBG := " ^ ("bin" / (proj ^ ".dbg")) *)
+            (* , "TESTER := " ^ ("bin" / "testall") *)
+            (* , "" *)
+            (* , "BUILD_FLAGS := " ^ mltonFlags *)
+            (* , "DBG_FLAGS := -const 'Exn.keepHistory true'" *)
+            (* , "" *)
+            (* , "SOURCE := " *)
+              (* ^ (String.concatWith " " ["src" / "*.sml", "src" / "*.mlb"]) *)
+            (* , "TESTS := " *)
+              (* ^ (String.concatWith " " ["tests" / "*.sml", "tests" / "*.mlb"]) *)
+            (* , "" *)
+            (* , "all: $(RELEASE) $(DBG) $(TESTER)" *)
+            (* , "" *)
+            (* , ".PHONY: test" *)
+            (* , "" *)
+            (* , "$(RELEASE): $(SOURCE)" *)
+            (* , "\tmlton $(BUILD_FLAGS) -output $@ " ^ ("src" / proj ^ ".mlb") *)
+            (* , "" *)
+            (* , "$(DBG): $(SOURCE)" *)
+            (* , "\tmlton $(BUILD_FLAGS) $(DBG_FLAGS) -output $@ " *)
+              (* ^ ("src" / proj ^ ".mlb") *)
+            (* , "" *)
+            (* , "$(TESTER): $(SOURCE) $(TESTS)" *)
+            (* , "\tmlton $(MLTON_FLAGS) $(DBG_FLAGS) -output $@ " *)
+              (* ^ ("tests" / proj ^ ".test.mlb") *)
+            (* , "" *)
+            (* , "test: $(TESTER)" *)
+            (* , "\t$(TESTER)" *)
+            (* , "" *)
+            (* , "clean:" *)
+            (* , "\trm -f $(BIN)/*" *)
+            (* , "" *)
+            (* , "deps:" *)
+            (* , "\tjinmori add -r requirements.txt" *)
+            (* ]) *)
+        (* ; writeFile (gitignore, "lib/") *)
+        (* ; touchFile reqs *)
         )
       handle OS.SysErr (msg, _) => ERR ("New project creation failed with error '" ^ msg ^ "'")
     end
