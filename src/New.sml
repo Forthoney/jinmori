@@ -53,7 +53,7 @@ struct
     in
       OK
         (
-        (* List.app OS.FileSys.mkDir [proj, src, tests, bin, lib] *)
+        List.app OS.FileSys.mkDir [proj, src, tests, bin, lib]
         (* ; writeFile (mainSml, String.concatWith "\n" *)
             (* [ "structure " ^ main ^ ":" *)
             (* , "sig" *)
@@ -116,6 +116,6 @@ struct
         (* ; writeFile (gitignore, "lib/") *)
         (* ; touchFile reqs *)
         )
-      handle OS.SysErr (msg, _) => ERR ("New project creation failed with error '" ^ msg ^ "'")
+      (* handle OS.SysErr (msg, _) => ERR ("New project creation failed with error '" ^ msg ^ "'") *)
     end
 end
