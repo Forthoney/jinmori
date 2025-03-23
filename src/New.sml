@@ -55,7 +55,7 @@ struct
     in
       OK
         (
-          OS.FileSys.mkDir proj
+          (* OS.FileSys.mkDir proj *)
         (* ; writeFile (mainSml, String.concatWith "\n" *)
             (* [ "structure " ^ main ^ ":" *)
             (* , "sig" *)
