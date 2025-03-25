@@ -113,7 +113,7 @@ struct
             , "deps:"
             , "\tjinmori add -r requirements.txt"
             ])
-        ; writeFile (gitignore, "lib/")
+        ; writeFile (gitignore, "lib/\nbin/")
         ; touchFile reqs
         )
       handle OS.SysErr (msg, _) =>
