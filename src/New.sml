@@ -31,7 +31,7 @@ struct
           ERR ("Invalid project name " ^ path)
     | nameParser (_, _) = ERR "No name given for project"
 
-  val default = {proj = "", main = "", mltonFlags = ""}
+  val default = {proj = "", main = "", mltonFlags = "-mlb-path-var PKGS ~/.jinmori/pkgs"}
   val parseOrder = [nameParser]
 
   fun run {proj, main, mltonFlags} =
@@ -79,7 +79,7 @@ struct
         ; writeFile (makefile, String.concatWith "\n"
             [ "RELEASE := " ^ ("bin" / proj)
             , "DBG := " ^ ("bin" / (proj ^ ".dbg"))
-            , "TESTER := " ^ ("bin" / "testall")
+            , "TESTER := " ^ ("bin" / "tester")
             , ""
             , "BUILD_FLAGS := " ^ mltonFlags
             , "DBG_FLAGS := -const 'Exn.keepHistory true'"
