@@ -1,35 +1,33 @@
 structure Package:
 sig
-  type package = {source: string, author: string, name: string}
+  exception Destination of string
+  exception NotFound
+  exception Build
 
-  datatype download_err = PackageNotFound
-  datatype build_err =
-    BuildFailed
-  | BinaryNotFound
-  | InvalidDestination of string
-  | Generic of string
+  type package = {source: string, author: string, name: string}
 
   val toString: package -> string
   val fromString: string -> package option
 
-  val fetchSrc: string -> package -> (string, download_err) Result.result
-  val build: (string * string) -> package -> (string, build_err) Result.result
+  (*!
+   * Fetch the path to a package, downloading the package if necessary
+   *)
+  val fetch: package -> string
+
+  (*!
+   * Build a package at the src path and save the binary at dest
+   *)
+  val build: (string * string) -> package -> unit
 end =
 struct
-  open Path
-  open Result
+  exception Destination of string
+  exception NotFound
+  exception Build
 
   structure FS = OS.FileSys
   structure Proc = OS.Process
 
   type package = {source: string, author: string, name: string}
-
-  datatype download_err = PackageNotFound
-  datatype build_err =
-    BuildFailed
-  | BinaryNotFound
-  | InvalidDestination of string
-  | Generic of string
 
   fun fromString s =
     case String.tokens (fn c => c = #"/") s of
@@ -40,7 +38,7 @@ struct
   fun toString {source, author, name} =
     String.concatWith "/" [source, author, name]
 
-  fun build (src, bin) {source, author, name} =
+  fun build (src, dest) {source, author, name} =
     if Proc.isSuccess (Proc.system ("make --directory=" ^ src)) then
       let
         fun isExec exe =
@@ -48,23 +46,23 @@ struct
         val candidates = [src / name, src / "bin" / name, src / "exec" / name]
 
         fun move (from, to) =
-          (FS.rename {old = from, new = to}; OK to)
+          FS.rename {old = from, new = to}
           handle OS.SysErr (msg, e) =>
             if Option.isSome e andalso Option.valOf e = Posix.Error.noent then
-              ERR (InvalidDestination to)
+              raise Destination to
             else
-              ERR (Generic msg)
+              raise Fail msg
       in
         case List.find isExec candidates of
-          SOME exec => move (exec, bin / name)
-        | NONE => ERR BinaryNotFound
+          SOME exec => move (exec, dest / name)
+        | NONE => raise NotFound
       end
     else
-      ERR BuildFailed
+      raise Build
 
-  fun fetchSrc home {source, author, name} =
+  fun fetch {source, author, name} =
     let
-      val dest = home / "pkgs" / source / author / name
+      val dest = Path.home / "pkgs" / source / author / name
       val addr =
         String.concatWith "/" ["https://" ^ source, author, name ^ ".git"]
       val cloneCmd = String.concatWith " " ["git", "clone", addr, dest]
@@ -72,7 +70,7 @@ struct
       if
         FS.access (dest, [FS.A_READ])
         orelse Proc.isSuccess (Proc.system cloneCmd)
-      then OK dest
-      else ERR PackageNotFound
+      then dest
+      else raise NotFound
     end
 end

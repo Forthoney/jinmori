@@ -1,10 +1,10 @@
 structure New: CONFIG =
 struct
-  open Result
-  open Path
+  exception Name of string
+  exception Create of string
 
   type config = {proj: string, main: string, mltonFlags: string}
-  type parser = (string list * config) -> (string list * config, string) result
+  type parser = (string list * config) -> (string list * config)
 
   fun writeFile (path, content) =
     let val out = TextIO.openOut path
@@ -26,12 +26,14 @@ struct
 
   fun nameParser ([path], {proj, main, mltonFlags}) =
         if validate path then
-          OK ([], {proj = path, main = path, mltonFlags = mltonFlags})
+          ([], {proj = path, main = path, mltonFlags = mltonFlags})
         else
-          ERR ("Invalid project name " ^ path)
-    | nameParser (_, _) = ERR "No name given for project"
+          raise (Name path)
+    | nameParser (_, _) =
+        raise (Name "")
 
-  val default = {proj = "", main = "", mltonFlags = "-mlb-path-var PKGS ~/.jinmori/pkgs"}
+  val default =
+    {proj = "", main = "", mltonFlags = "-mlb-path-var PKGS $JINMORI_HOME/pkgs"}
   val parseOrder = [nameParser]
 
   fun run {proj, main, mltonFlags} =
@@ -39,7 +41,6 @@ struct
       val src = proj / "src"
       val tests = proj / "tests"
       val bin = proj / "bin"
-      val lib = proj / "lib"
 
       val srcMlb = src / ("src.mlb")
       val mainSml = src / ("Main" ^ ".sml")
@@ -49,74 +50,75 @@ struct
       val testsMlb = tests / (proj ^ ".test.mlb")
 
       val makefile = proj / "Makefile"
-      val reqs = proj / "requirements.txt"
+      val configs = proj / Path.config
       val gitignore = proj / ".gitignore"
     in
-      OK
-        ( List.app OS.FileSys.mkDir [proj, src, tests, bin, lib]
-        ; writeFile (mainSml, String.concatWith "\n"
-            [ "structure " ^ main ^ ":"
-            , "sig"
-            , "  val greeting: string"
-            , "end ="
-            , "struct"
-            , "  val hello = \"Hello, \""
-            , "  val world = \"World!\""
-            , "  val greeting = hello ^ world ^ \"\\n\""
-            , "end"
-            , "val () = print " ^ main ^ ".greeting"
-            ])
-        ; writeFile (testSml, String.concatWith "\n"
-            [ "if true = false then"
-            , "  raise Fail \"The fabric of reality crumbles...\""
-            , "else"
-            , "  ()"
-            ])
-        ; writeFile (srcMlb, "$(SML_LIB)/basis/basis.mlb")
-        ; writeFile (projMlb, String.concatWith "\n" ["src.mlb", "Main.sml"])
-        ; writeFile
-            (testsMlb, String.concatWith "\n" ["../src/src.mlb", "Test.sml"])
-        ; writeFile (makefile, String.concatWith "\n"
-            [ "RELEASE := " ^ ("bin" / proj)
-            , "DBG := " ^ ("bin" / (proj ^ ".dbg"))
-            , "TESTER := " ^ ("bin" / "tester")
-            , ""
-            , "BUILD_FLAGS := " ^ mltonFlags
-            , "DBG_FLAGS := -const 'Exn.keepHistory true'"
-            , ""
-            , "SOURCE := "
-              ^ (String.concatWith " " ["src" / "*.sml", "src" / "*.mlb"])
-            , "TESTS := "
-              ^ (String.concatWith " " ["tests" / "*.sml", "tests" / "*.mlb"])
-            , ""
-            , "all: $(RELEASE) $(DBG) $(TESTER)"
-            , ""
-            , ".PHONY: test"
-            , ""
-            , "$(RELEASE): $(SOURCE)"
-            , "\tmlton $(BUILD_FLAGS) -output $@ " ^ ("src" / proj ^ ".mlb")
-            , ""
-            , "$(DBG): $(SOURCE)"
-            , "\tmlton $(BUILD_FLAGS) $(DBG_FLAGS) -output $@ "
-              ^ ("src" / proj ^ ".mlb")
-            , ""
-            , "$(TESTER): $(SOURCE) $(TESTS)"
-            , "\tmlton $(MLTON_FLAGS) $(DBG_FLAGS) -output $@ "
-              ^ ("tests" / proj ^ ".test.mlb")
-            , ""
-            , "test: $(TESTER)"
-            , "\t$(TESTER)"
-            , ""
-            , "clean:"
-            , "\trm -f $(BIN)/*"
-            , ""
-            , "deps:"
-            , "\tjinmori add -r requirements.txt"
-            ])
-        ; writeFile (gitignore, "lib/\nbin/")
-        ; touchFile reqs
-        )
-      handle OS.SysErr (msg, _) =>
-        ERR ("New project creation failed with error '" ^ msg ^ "'")
+      ( List.app OS.FileSys.mkDir [proj, src, tests, bin]
+      ; writeFile (mainSml, String.concatWith "\n"
+          [ "structure " ^ main ^ ":"
+          , "sig"
+          , "  val greeting: string"
+          , "end ="
+          , "struct"
+          , "  val hello = \"Hello, \""
+          , "  val world = \"World!\""
+          , "  val greeting = hello ^ world ^ \"\\n\""
+          , "end"
+          , "val () = print " ^ main ^ ".greeting"
+          ])
+      ; writeFile (testSml, String.concatWith "\n"
+          [ "if true = false then"
+          , "  raise Fail \"The fabric of reality crumbles...\""
+          , "else"
+          , "  ()"
+          ])
+      ; writeFile (srcMlb, String.concatWith "\n"
+          [ "(* $(PKGS)/github.com/author/pkgName *)"
+          , "$(SML_LIB)/basis/basis.mlb"
+          ])
+      ; writeFile (projMlb, String.concatWith "\n" ["src.mlb", "Main.sml"])
+      ; writeFile
+          (testsMlb, String.concatWith "\n" ["../src/src.mlb", "Test.sml"])
+      ; writeFile (makefile, String.concatWith "\n"
+          [ "RELEASE := " ^ ("bin" / proj)
+          , "DBG := " ^ ("bin" / (proj ^ ".dbg"))
+          , "TESTER := " ^ ("bin" / "tester")
+          , ""
+          , "BUILD_FLAGS := " ^ mltonFlags
+          , "DBG_FLAGS := -const 'Exn.keepHistory true'"
+          , ""
+          , "SOURCE := "
+            ^ (String.concatWith " " ["src" / "*.sml", "src" / "*.mlb"])
+          , "TESTS := "
+            ^ (String.concatWith " " ["tests" / "*.sml", "tests" / "*.mlb"])
+          , ""
+          , "all: $(RELEASE) $(DBG) $(TESTER)"
+          , ""
+          , ".PHONY: test"
+          , ""
+          , "$(RELEASE): $(SOURCE)"
+          , "\tmlton $(BUILD_FLAGS) -output $@ " ^ ("src" / proj ^ ".mlb")
+          , ""
+          , "$(DBG): $(SOURCE)"
+          , "\tmlton $(BUILD_FLAGS) $(DBG_FLAGS) -output $@ "
+            ^ ("src" / proj ^ ".mlb")
+          , ""
+          , "$(TESTER): $(SOURCE) $(TESTS)"
+          , "\tmlton $(MLTON_FLAGS) $(DBG_FLAGS) -output $@ "
+            ^ ("tests" / proj ^ ".test.mlb")
+          , ""
+          , "test: $(TESTER)"
+          , "\t$(TESTER)"
+          , ""
+          , "clean:"
+          , "\trm -f $(BIN)/*"
+          , ""
+          , "deps:"
+          , "\tjinmori add -r " ^ Path.config
+          ])
+      ; writeFile (gitignore, "lib/\nbin/")
+      ; touchFile configs
+      )
+      handle OS.SysErr (msg, _) => raise Create msg
     end
 end

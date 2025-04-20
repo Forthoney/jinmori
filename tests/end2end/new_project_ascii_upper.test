@@ -5,9 +5,9 @@ $JINMORI new Project
 (created dir)	$PWD/Project/src
 (created dir)	$PWD/Project/tests
 (created dir)	$PWD/Project/bin
-(created dir)	$PWD/Project/lib
+
 (added)	$PWD/Project/Makefile
-(added)	$PWD/Project/requirements.txt
+(added)	$PWD/Project/jinmori.toml
 (added)	$PWD/Project/.gitignore.txt
 
 (added)	$PWD/Project/src/src.mlb

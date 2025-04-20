@@ -2,7 +2,7 @@ BUILD_DIR ?= bin
 
 RELEASE := $(BUILD_DIR)/jinmori
 DBG := $(BUILD_DIR)/jinmori.dbg
-TESTER := $(BUILD_DIR)/testall
+TESTER := $(BUILD_DIR)/tester
 
 BUILD_FLAGS :=
 DBG_FLAGS := -const 'Exn.keepHistory true'
