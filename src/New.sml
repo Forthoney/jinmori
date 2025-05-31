@@ -1,4 +1,4 @@
-structure New: CONFIG =
+structure New: COMMAND =
 struct
   exception Name of string
   exception Create of string
@@ -50,7 +50,7 @@ struct
       val testsMlb = tests / (proj ^ ".test.mlb")
 
       val makefile = proj / "Makefile"
-      val configs = proj / Path.config
+      val manifest = proj / Path.manifest
       val gitignore = proj / ".gitignore"
     in
       ( List.app OS.FileSys.mkDir [proj, src, tests, bin]
@@ -114,10 +114,10 @@ struct
           , "\trm -f $(BIN)/*"
           , ""
           , "deps:"
-          , "\tjinmori add -r " ^ Path.config
+          , "\tjinmori add -r " ^ Path.manifest
           ])
       ; writeFile (gitignore, "lib/\nbin/")
-      ; touchFile configs
+      ; touchFile manifest
       )
       handle OS.SysErr (msg, _) => raise Create msg
     end

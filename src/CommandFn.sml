@@ -1,4 +1,4 @@
-signature CONFIG =
+signature COMMAND =
 sig
   type config
   type parser = (string list * config) -> string list * config
@@ -8,14 +8,12 @@ sig
   val run: config -> unit
 end
 
-signature COMMAND =
-sig
-  val exec: string list -> unit
-end
-
 exception Args
 
-functor CommandFn(Config: CONFIG): COMMAND =
+functor CommandFn(Command: COMMAND):
+sig
+  val exec: string list -> unit
+end=
 struct
   fun eprint msg = TextIO.output (TextIO.stdErr, msg)
 
@@ -26,6 +24,6 @@ struct
         | loop (parser :: ps) state =
             loop ps (parser state)
     in
-      Config.run (loop Config.parseOrder (args, Config.default))
+      Command.run (loop Command.parseOrder (args, Command.default))
     end
 end

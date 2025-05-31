@@ -1,8 +1,8 @@
-structure Add: CONFIG =
+structure Add: COMMAND =
 struct
   structure Pkg = Package
 
-  type config = Pkg.package list
+  type config = Pkg.t list
   type parser = (string list * config) -> (string list * config)
 
   fun depParser (args, pkgs) =
@@ -15,7 +15,7 @@ struct
   fun updateConfig projDir pkgs =
     let
       val pkgs = map Pkg.toString pkgs
-      val file = TextIO.openAppend (projDir / Path.config)
+      val file = TextIO.openAppend (projDir / Path.manifest)
       val _ = TextIO.output (file, String.concatWith "\n" pkgs ^ "\n")
     in
       TextIO.flushOut file

@@ -4,20 +4,20 @@ sig
   exception NotFound
   exception Build
 
-  type package = {source: string, author: string, name: string}
+  type t = {source: string, author: string, name: string}
 
-  val toString: package -> string
-  val fromString: string -> package option
+  val toString: t -> string
+  val fromString: string -> t option
 
   (*!
    * Fetch the path to a package, downloading the package if necessary
    *)
-  val fetch: package -> string
+  val fetch: t -> string
 
   (*!
    * Build a package at the src path and save the binary at dest
    *)
-  val build: (string * string) -> package -> unit
+  val build: (string * string) -> t -> unit
 end =
 struct
   exception Destination of string
@@ -27,7 +27,7 @@ struct
   structure FS = OS.FileSys
   structure Proc = OS.Process
 
-  type package = {source: string, author: string, name: string}
+  type t = {source: string, author: string, name: string}
 
   fun fromString s =
     case String.tokens (fn c => c = #"/") s of

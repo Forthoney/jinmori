@@ -1,8 +1,8 @@
-structure Install: CONFIG =
+structure Install: COMMAND =
 struct
   structure Pkg = Package
 
-  type config = Pkg.package list
+  type config = Pkg.t list
   type parser = (string list * config) -> (string list * config)
 
   fun depParser (args, pkgs) =

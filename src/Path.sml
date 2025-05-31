@@ -5,7 +5,7 @@ struct
   exception Home
   exception ProjectRoot
 
-  val config = "jinmori.toml"
+  val manifest = "Jinmori.toml"
 
   val home =
     case OS.Process.getEnv "JINMORI_HOME" of
@@ -20,6 +20,6 @@ struct
 
   fun projectRoot pwd =
     if OS.Path.isRoot pwd then NONE
-    else if OS.FileSys.access (pwd / config, []) then SOME pwd
+    else if OS.FileSys.access (pwd / manifest, []) then SOME pwd
     else projectRoot (OS.Path.getParent pwd)
 end
