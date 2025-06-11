@@ -15,6 +15,6 @@ struct
   val run =
     case Path.home of
       NONE => raise Path.Home
-    | SOME home => 
-      List.app (fn pkg => Pkg.build (Pkg.fetch pkg, home / "bin") pkg)
+    | SOME home =>
+        List.app (fn pkg => Pkg.build (Pkg.fetch pkg, home / "bin") pkg)
 end

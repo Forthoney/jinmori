@@ -13,7 +13,7 @@ exception Args
 functor CommandFn(Command: COMMAND):
 sig
   val exec: string list -> unit
-end=
+end =
 struct
   fun eprint msg = TextIO.output (TextIO.stdErr, msg)
 

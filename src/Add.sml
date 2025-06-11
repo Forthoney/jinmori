@@ -18,17 +18,21 @@ struct
       val {package, dependencies} = Manifest.read (projDir / Path.manifest)
       fun add acc =
         fn [] => acc
-         | (dep::rest) =>
+         | (dep :: rest) =>
           case List.find (fn s => s = dep) acc of
-            SOME _ => add rest acc
-          | NONE => add rest (dep::acc)
+            SOME _ => add acc rest
+          | NONE => add (dep :: acc) rest
       val dependencies = add dependencies deps
     in
-      Manifest.write ((projDir / Path.manifest), {package=package, dependencies=dependencies})
+      Manifest.write
+        ( projDir / Path.manifest
+        , {package = package, dependencies = dependencies}
+        )
     end
 
   fun run pkgs =
     case Path.projectRoot (OS.FileSys.getDir ()) of
-      SOME projDir => (List.app (ignore o Pkg.fetch) pkgs; updateConfig projDir pkgs)
+      SOME projDir =>
+        (List.app (ignore o Pkg.fetch) pkgs; updateConfig projDir pkgs)
     | NONE => raise Path.ProjectRoot
 end

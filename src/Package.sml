@@ -64,16 +64,16 @@ struct
     case Path.home of
       NONE => raise Path.Home
     | SOME home =>
-      let
-        val dest = home / "pkgs" / source / author / name
-        val addr =
-          String.concatWith "/" ["https://" ^ source, author, name ^ ".git"]
-        val cloneCmd = String.concatWith " " ["git", "clone", addr, dest]
-      in
-        if
-          FS.access (dest, [FS.A_READ])
-          orelse Proc.isSuccess (Proc.system cloneCmd)
-        then dest
-        else raise NotFound
-      end
+        let
+          val dest = home / "pkgs" / source / author / name
+          val addr =
+            String.concatWith "/" ["https://" ^ source, author, name ^ ".git"]
+          val cloneCmd = String.concatWith " " ["git", "clone", addr, dest]
+        in
+          if
+            FS.access (dest, [FS.A_READ])
+            orelse Proc.isSuccess (Proc.system cloneCmd)
+          then dest
+          else raise NotFound
+        end
 end
