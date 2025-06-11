@@ -6,6 +6,8 @@ struct
   type config = {proj: string, main: string, mltonFlags: string}
   type parser = (string list * config) -> (string list * config)
 
+  val shortHelp = "Create a new SML project"
+
   fun writeFile (path, content) =
     let val out = TextIO.openOut path
     in TextIO.output (out, content); TextIO.closeOut out

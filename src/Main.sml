@@ -4,13 +4,15 @@ structure InstallCmd = CommandFn(Install)
 structure BuildCmd = CommandFn(Build)
 
 val cmdName = "jinmori"
+val version = "0.1.0"
 val break = ""
 
 val subcommandHelp =
   (String.concatWith "\n" o map (fn (name, desc) => "\t" ^ name ^ "\t" ^ desc))
-    [ ("new", "Create a new SML project")
-    , ("add", "Add dependencies to a Jinmori project")
-    , ("install", "Install a MLton binary")
+    [ ("new", NewCmd.shortHelp)
+    , ("add", AddCmd.shortHelp)
+    , ("install", InstallCmd.shortHelp)
+    , ("build", BuildCmd.shortHelp)
     ]
 
 val help = String.concatWith "\n"
@@ -45,5 +47,6 @@ val () =
   | "install" :: args => InstallCmd.exec args
   | "build" :: args => BuildCmd.exec args
   | [] | ["help"] | "--help" :: _ => print help
+  | "--version" :: _ => print version
   | "help" :: cmd :: _ => print (helpSubcommand cmd)
   | cmd :: _ => print ("Unknown command '" ^ cmd ^ "'\n")

@@ -3,6 +3,7 @@ sig
   type config
   type parser = (string list * config) -> string list * config
 
+  val shortHelp: string
   val default: config
   val parseOrder: parser list
   val run: config -> unit
@@ -13,9 +14,12 @@ exception Args
 functor CommandFn(Command: COMMAND):
 sig
   val exec: string list -> unit
+  val shortHelp: string
 end =
 struct
   fun eprint msg = TextIO.output (TextIO.stdErr, msg)
+
+  val shortHelp = Command.shortHelp
 
   fun exec args =
     let

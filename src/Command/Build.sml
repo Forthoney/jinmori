@@ -5,6 +5,8 @@ struct
   type config = mode
   type parser = (string list * config) -> (string list * config)
 
+  val shortHelp = "Build a Jinmori executable"
+
   fun parser ("--debug" :: args, _) = (args, Debug)
     | parser ("--release" :: args, _) = (args, Release)
     | parser ([], mode) = ([], mode)
