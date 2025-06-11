@@ -1,10 +1,16 @@
 # Jinmori
 Jinmori is an opinionated Standard ML Package Manager.
-It offers dead-simple project management for young/new projects and
-painless migration to a custom solution when a project outgrows Jinmori.
 
 ## Dependencies
 To build Jinmori, you need the `mlton` compiler.
 
 ## Installation
-Run `make install`
+### I already have an existing Jinmori installation
+Jinmori can bootstrap itself.
+Clone this repository then run `jinmori build --release` anywhere in the repo.
+This will produce a new `jinmori` executable binary in `build/jinmori`.
+
+### I do not have an existing installation
+Clone this repository.
+Navigate to the root of the project (where this `README.md` is located),
+then run `mlton -output build/jinmori src/main.mlb`.
