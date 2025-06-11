@@ -5,18 +5,18 @@ struct
   exception Home
   exception ProjectRoot
 
-  val manifest = "Jinmori.toml"
+  val manifest = "Jinmori.json"
 
   val home =
     case OS.Process.getEnv "JINMORI_HOME" of
-      SOME dir => dir
+      SOME dir => SOME dir
     | NONE =>
         (case OS.Process.getEnv "HOME" of
-           SOME dir => dir / ".jinmori"
+           SOME dir => SOME (dir / ".jinmori")
          | NONE =>
              (case OS.Process.getEnv "USERPROFILE" of
-                SOME dir => dir / ".jinmori"
-              | NONE => raise Home))
+                SOME dir => SOME (dir / ".jinmori")
+              | NONE => NONE))
 
   fun projectRoot pwd =
     if OS.Path.isRoot pwd then NONE

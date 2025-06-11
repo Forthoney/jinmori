@@ -14,11 +14,17 @@ struct
 
   fun updateConfig projDir pkgs =
     let
-      val pkgs = map Pkg.toString pkgs
-      val file = TextIO.openAppend (projDir / Path.manifest)
-      val _ = TextIO.output (file, String.concatWith "\n" pkgs ^ "\n")
+      val deps = map Pkg.toString pkgs
+      val {package, dependencies} = Manifest.read (projDir / Path.manifest)
+      fun add acc =
+        fn [] => acc
+         | (dep::rest) =>
+          case List.find (fn s => s = dep) acc of
+            SOME _ => add rest acc
+          | NONE => add rest (dep::acc)
+      val dependencies = add dependencies deps
     in
-      TextIO.flushOut file
+      Manifest.write ((projDir / Path.manifest), {package=package, dependencies=dependencies})
     end
 
   fun run pkgs =

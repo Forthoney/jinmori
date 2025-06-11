@@ -12,5 +12,9 @@ struct
 
   val default = []
 
-  val run = List.app (fn pkg => Pkg.build (Pkg.fetch pkg, Path.home / "bin") pkg)
+  val run =
+    case Path.home of
+      NONE => raise Path.Home
+    | SOME home => 
+      List.app (fn pkg => Pkg.build (Pkg.fetch pkg, home / "bin") pkg)
 end

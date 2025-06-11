@@ -1,9 +1,12 @@
 $(SML_LIB)/basis/basis.mlb
+$(SML_LIB)/smlnj-lib/JSON/json-lib.mlb
 
 Path.sml
 Package.sml
+Manifest.sml
 
 CommandFn.sml
 New.sml
 Add.sml
 Install.sml
+Build.sml

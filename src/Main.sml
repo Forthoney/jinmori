@@ -1,6 +1,7 @@
 structure NewCmd = CommandFn(New)
 structure AddCmd = CommandFn(Add)
 structure InstallCmd = CommandFn(Install)
+structure BuildCmd = CommandFn(Build)
 
 val cmdName = "jinmori"
 val break = ""
@@ -42,6 +43,7 @@ val () =
     "new" :: args => NewCmd.exec args
   | "add" :: args => AddCmd.exec args
   | "install" :: args => InstallCmd.exec args
+  | "build" :: args => BuildCmd.exec args
   | [] | ["help"] | "--help" :: _ => print help
   | "help" :: cmd :: _ => print (helpSubcommand cmd)
   | cmd :: _ => print ("Unknown command '" ^ cmd ^ "'\n")
