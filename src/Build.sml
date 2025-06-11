@@ -16,23 +16,22 @@ struct
 
   fun run mode =
     let
-      val cmd =
+      fun setup () =
         case Path.projectRoot (OS.FileSys.getDir ()) of
           NONE => raise Path.ProjectRoot
         | SOME root => (
           case Path.home of
             NONE => raise Path.Home
-          | SOME home =>
-            let
-              val main = root / "src" / "main.mlb"
-              val output = root / "build"
-              val _ = if OS.FileSys.access (output, []) then () else OS.FileSys.mkDir output
-            in
-              case mode of
-                Debug => ["mlton",  "-output", output / "main.dbg", "-const 'Exn.keepHistory true'", main]
-              | Release => ["mlton", "-output", output / "main", main]
-            end
-        )
+          | SOME home => (root, home))
+      val (root, home) = setup ()
+      val {package, dependencies} = Manifest.read (root / Path.manifest)
+      val main = root / "src" / "main.mlb"
+      val output = root / "build"
+      val _ = if OS.FileSys.access (output, []) then () else OS.FileSys.mkDir output
+      val cmd =
+        case mode of
+          Debug => ["mlton",  "-output", output / (#name package ^ ".dbg"), "-const 'Exn.keepHistory true'", main]
+        | Release => ["mlton", "-output", output / #name package, main]
     in
       if (OS.Process.isSuccess o OS.Process.system o String.concatWith " ") cmd then
         ()
