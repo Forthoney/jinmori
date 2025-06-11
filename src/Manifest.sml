@@ -1,4 +1,11 @@
-structure Manifest =
+structure Manifest:
+sig
+  type t
+  val default: string -> t
+  val toJSON: t -> JSON.value
+  val read: string -> t
+  val write: string * t -> unit
+end =
 struct
   exception MissingField of string
 
@@ -19,7 +26,6 @@ struct
         , ("dependencies", JSON.ARRAY (map JSON.STRING dependencies))
         ]
     end
-
 
   fun findKey s =
     Option.compose (#2, List.find (fn (k, v) => k = s))
@@ -54,7 +60,7 @@ struct
     let
       val out = TextIO.openOut path
       val manifest = toJSON metadata
-      val _ = JSONPrinter.print' {strm=out, pretty=true} manifest
+      val _ = JSONPrinter.print' {strm = out, pretty = true} manifest
     in
       TextIO.closeOut out
     end

@@ -5,8 +5,8 @@ Path.sml
 Package.sml
 Manifest.sml
 
-CommandFn.sml
-New.sml
-Add.sml
-Install.sml
-Build.sml
+Command/CommandFn.sml
+Command/New.sml
+Command/Add.sml
+Command/Install.sml
+Command/Build.sml
