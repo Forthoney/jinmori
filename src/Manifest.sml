@@ -47,14 +47,10 @@ struct
     | _ => raise MissingField "dependencies"
 
   fun read path =
-    let
-      val src = JSONParser.openFile path
-    in
-      case JSONParser.parse src before JSONParser.close src of
-        JSON.OBJECT src =>
-          {package = package src, dependencies = dependencies src}
-      | _ => raise MissingField ""
-    end
+    case JSONParser.parse path of
+      JSON.OBJECT src =>
+        {package = package src, dependencies = dependencies src}
+    | _ => raise MissingField ""
 
   fun write (path, metadata) =
     let
