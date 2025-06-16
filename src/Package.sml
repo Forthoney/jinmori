@@ -4,7 +4,7 @@ sig
   exception NotFound
   exception Build
 
-  type t = {source: string, author: string, name: string}
+  type t = {source: string, author: string, repo: string}
 
   val toString: t -> string
   val fromString: string -> t option
@@ -12,12 +12,7 @@ sig
   (*!
    * Fetch the path to a package, downloading the package if necessary
    *)
-  val fetch: t -> string
-
-  (*!
-   * Build a package at the src path and save the binary at dest
-   *)
-  val build: (string * string) -> t -> unit
+  val fetch: t -> unit
 end =
 struct
   exception Destination of string
@@ -27,53 +22,40 @@ struct
   structure FS = OS.FileSys
   structure Proc = OS.Process
 
-  type t = {source: string, author: string, name: string}
+  type t = {source: string, author: string, repo: string}
 
   fun fromString s =
     case String.tokens (fn c => c = #"/") s of
-      [source, author, name] =>
-        SOME {source = source, author = author, name = name}
+      [source, author, repo] =>
+        SOME {source = source, author = author, repo = repo}
     | _ => NONE
 
-  fun toString {source, author, name} =
-    String.concatWith "/" [source, author, name]
+  fun toString {source, author, repo} =
+    String.concatWith "/" [source, author, repo]
 
-  fun build (src, dest) {source, author, name} =
-    if Proc.isSuccess (Proc.system ("make --directory=" ^ src)) then
-      let
-        fun isExec exe =
-          FS.access (exe, [FS.A_EXEC])
-        val candidates = [src / name, src / "bin" / name, src / "exec" / name]
-
-        fun move (from, to) =
-          FS.rename {old = from, new = to}
-          handle OS.SysErr (msg, e) =>
-            if Option.isSome e andalso Option.valOf e = Posix.Error.noent then
-              raise Destination to
-            else
-              raise Fail msg
-      in
-        case List.find isExec candidates of
-          SOME exec => move (exec, dest / name)
-        | NONE => raise NotFound
-      end
-    else
-      raise Build
-
-  fun fetch {source, author, name} =
-    case Path.home of
-      NONE => raise Path.Home
-    | SOME home =>
+  fun fetch {source, author, repo} =
+    let
+      val dest = Path.home / "pkgs" / source / author / repo
+    in
+      if FS.access (dest, []) then
+        ()
+      else
         let
-          val dest = home / "pkgs" / source / author / name
           val addr =
-            String.concatWith "/" ["https://" ^ source, author, name ^ ".git"]
+            String.concatWith "/" ["https://" ^ source, author, repo ^ ".git"]
           val cloneCmd = String.concatWith " " ["git", "clone", addr, dest]
         in
-          if
-            FS.access (dest, [FS.A_READ])
-            orelse Proc.isSuccess (Proc.system cloneCmd)
-          then dest
-          else raise NotFound
+          if Proc.isSuccess (Proc.system cloneCmd) then
+            let
+              val {package, dependencies} =
+                Manifest.read (dest / "Jinmori.json")
+              val dependencies =
+                map (Option.valOf o fromString) dependencies
+            in
+              List.app fetch dependencies
+            end
+          else
+            raise NotFound
         end
+    end
 end

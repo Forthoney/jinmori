@@ -1,6 +1,5 @@
 structure NewCmd = CommandFn(New)
 structure AddCmd = CommandFn(Add)
-structure InstallCmd = CommandFn(Install)
 structure BuildCmd = CommandFn(Build)
 
 val cmdName = "jinmori"
@@ -11,7 +10,6 @@ val subcommandHelp =
   (String.concatWith "\n" o map (fn (name, desc) => "\t" ^ name ^ "\t" ^ desc))
     [ ("new", NewCmd.shortHelp)
     , ("add", AddCmd.shortHelp)
-    , ("install", InstallCmd.shortHelp)
     , ("build", BuildCmd.shortHelp)
     ]
 
@@ -44,7 +42,6 @@ val () =
   case CommandLine.arguments () of
     "new" :: args => NewCmd.exec args
   | "add" :: args => AddCmd.exec args
-  | "install" :: args => InstallCmd.exec args
   | "build" :: args => BuildCmd.exec args
   | [] | ["help"] | "--help" :: _ => print help
   | "--version" :: _ => print version

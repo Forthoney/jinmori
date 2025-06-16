@@ -33,8 +33,7 @@ struct
     end
 
   fun run pkgs =
-    case Path.projectRoot (OS.FileSys.getDir ()) of
-      SOME projDir =>
-        (List.app (ignore o Pkg.fetch) pkgs; updateConfig projDir pkgs)
-    | NONE => raise Path.ProjectRoot
+    let val projDir = Path.projectRoot (OS.FileSys.getDir ())
+    in (List.app Pkg.fetch pkgs; updateConfig projDir pkgs)
+    end
 end
