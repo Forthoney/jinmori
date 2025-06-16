@@ -16,24 +16,28 @@ struct
 
   val default = Debug
 
+  structure FS = OS.FileSys
+
+  fun mltonArgs {extension, options} =
+    [ "mlton"
+    , "-mlb-path-var 'JINMORI_LIB " ^ Path.home ^ "pkg" ^ "'"
+    , "-output"
+    , output / (#name package ^ extension)
+    ] @ options @ [main]
+
   fun run mode =
     let
-      val root = Path.projectRoot (OS.FileSys.getDir ())
-      val {package, dependencies} = Manifest.read (root / Path.manifest)
+      val root = Path.projectRoot (FS.getDir ())
       val main = root / "src" / "main.mlb"
       val output = root / "build"
+      val {package, dependencies} = Manifest.read (root / Path.manifest)
+      handle IO.Io {cause=OS.SysErr _, ...} => Fail "Not a Jinmori project"
       val _ =
-        if OS.FileSys.access (output, []) then () else OS.FileSys.mkDir output
-      fun cmdArgs extension options =
-        [ "mlton"
-        , "-mlb-path-var 'JINMORI_LIB " ^ Path.home ^ "pkg" ^ "'"
-        , "-output"
-        , output / (#name package ^ extension)
-        ] @ options @ [main]
+        if FS.access (output, []) then () else FS.mkDir output
       val cmd =
         case mode of
-          Debug => cmdArgs ".dbg" ["-const 'Exn.keepHistory true'"]
-        | Release => cmdArgs "" []
+          Debug => mltonArgs {extention=".dbg", options=["-const 'Exn.keepHistory true'"]}
+        | Release => cmdArgs {extention="", options=[]}
     in
       if (OS.Process.isSuccess o OS.Process.system o String.concatWith " ") cmd then
         ()

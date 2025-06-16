@@ -15,17 +15,13 @@ struct
     {package = {name = name, version = "0.1.0"}, dependencies = []}
 
   fun toJSON {package = {name, version}, dependencies} =
-    let
-      val _ = List.app print dependencies
-    in
-      JSON.OBJECT
-        [ ( "package"
-          , JSON.OBJECT
-              [("name", JSON.STRING name), ("version", JSON.STRING version)]
-          )
-        , ("dependencies", JSON.ARRAY (map JSON.STRING dependencies))
-        ]
-    end
+    JSON.OBJECT
+      [ ( "package"
+        , JSON.OBJECT
+            [("name", JSON.STRING name), ("version", JSON.STRING version)]
+        )
+      , ("dependencies", JSON.ARRAY (map JSON.STRING dependencies))
+      ]
 
   fun findKey s =
     Option.compose (#2, List.find (fn (k, v) => k = s))
@@ -47,7 +43,7 @@ struct
     | _ => raise MissingField "dependencies"
 
   fun read path =
-    case JSONParser.parse path of
+    case JSONParser.parseFile path of
       JSON.OBJECT src =>
         {package = package src, dependencies = dependencies src}
     | _ => raise MissingField ""
