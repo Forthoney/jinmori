@@ -31,13 +31,15 @@ struct
         , "-output"
         , output / (#name package ^ extension)
         ] @ options @ [main]
-      handle IO.Io {cause=OS.SysErr _, ...} => raise Fail "Not a Jinmori project"
-      val _ =
-        if FS.access (output, []) then () else FS.mkDir output
+        handle IO.Io {cause = OS.SysErr _, ...} =>
+          raise Fail "Not a Jinmori project"
+      val _ = if FS.access (output, []) then () else FS.mkDir output
       val cmd =
         case mode of
-          Debug => mltonArgs {extension=".dbg", options=["-const 'Exn.keepHistory true'"]}
-        | Release => mltonArgs {extension="", options=[]}
+          Debug =>
+            mltonArgs
+              {extension = ".dbg", options = ["-const 'Exn.keepHistory true'"]}
+        | Release => mltonArgs {extension = "", options = []}
     in
       if (OS.Process.isSuccess o OS.Process.system o String.concatWith " ") cmd then
         ()
