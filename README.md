@@ -18,5 +18,6 @@ then run `mlton -output build/jinmori src/main.mlb`.
 ## Planned features
 Jinmori currently only supports using the latest commit of a repo.
 - [] Support version tags
-- [] Assign MLBasisPathMap variables
 - [] Lockfile
+- [] Install commands
+- [] Assign MLBasisPathMap variables
