@@ -34,6 +34,6 @@ struct
 
   fun run pkgs =
     let val projDir = Path.projectRoot (OS.FileSys.getDir ())
-    in (List.app Pkg.fetch pkgs; updateConfig projDir pkgs)
+    in (List.app Pkg.fetchLatest pkgs; updateConfig projDir pkgs)
     end
 end

@@ -12,7 +12,7 @@ sig
   (*!
    * Fetch the path to a package, downloading the package if necessary
    *)
-  val fetch: t -> unit
+  val fetchLatest: t -> unit
 end =
 struct
   exception Destination of string
@@ -33,29 +33,6 @@ struct
   fun toString {source, author, repo} =
     String.concatWith "/" [source, author, repo]
 
-  fun commitHash addr =
-    let
-      open MLton.Process
-      open Substring
-      val gitLs = create
-        { path = "/bin/sh"
-        , args = ["-c", String.concatWith " " ["git ls-remote", addr, "HEAD"]]
-        , env = NONE
-        , stderr = Param.self
-        , stdin = Param.null
-        , stdout = Param.pipe
-        }
-      val commitHash =
-        Option.compose
-          ( string o takel (fn c => c <> #"\t") o full
-          , TextIO.inputLine o Child.textIn o getStdout
-          ) gitLs
-    in
-      case (commitHash, reap gitLs) of
-        (SOME hash, Posix.Process.W_EXITED) => hash
-      | _ => raise Fail "Failed to retrieve commit hash"
-    end
-
   fun unfetch dest =
     let
       open OS.FileSys
@@ -71,41 +48,71 @@ struct
       recursiveRm (openDir dest)
     end
 
-  fun fetch {source, author, repo} =
+  fun latestTag gitCmd remoteAddr =
+    let
+      open MLton.Process
+      open Substring
+      val lsRemote = create
+        { path = gitCmd
+        , args = ["ls-remote", "--tags", "--sort=version:refname", remoteAddr]
+        , env = NONE  
+        , stderr = Param.null
+        , stdin = Param.null
+        , stdout = Param.pipe
+        }
+      val tag =
+        Option.compose
+          ( string o trimr (String.size "\n") o triml (String.size "refs/tags/") o taker (fn c => c <> #"\t") o full
+          , TextIO.inputLine o Child.textIn o getStdout
+          ) lsRemote
+    in
+      case (tag, reap lsRemote) of
+        (SOME tag, Posix.Process.W_EXITED) => tag
+      | _ => raise Fail "Failed to retrieve tag"
+    end
+
+  fun fetch gitCmd remoteAddr tag dest =
+    if FS.access (dest, []) then
+      ()
+    else
+      let
+        open MLton.Process
+        val gitClone = create
+          { path = gitCmd
+          , args =
+              ["clone", "--branch", tag, "--depth", "1", remoteAddr, dest]
+          , env = NONE
+          , stderr = Param.null
+          , stdin = Param.null
+          , stdout = Param.null
+          }
+      in
+        case reap gitClone of
+          Posix.Process.W_EXITED =>
+            let
+              val {package, dependencies} =
+                Manifest.read (dest / "Jinmori.json")
+                handle IO.Io {cause = OS.SysErr _, ...} =>
+                  (unfetch dest; raise Fail "Not a jinmori package")
+            in
+              List.app (fetchLatest o Option.valOf o fromString) dependencies 
+            end
+        | _ => raise NotFound
+      end
+  and fetchLatest {source, author, repo} =
     let
       val remoteAddr =
         String.concatWith "/" ["https://" ^ source, author, repo ^ ".git"]
-      val dest =
-        Path.home / "pkg" / source / author
-        / (repo ^ "-" ^ commitHash remoteAddr)
     in
-      if FS.access (dest, []) then
-        ()
-      else
+      case Path.which "git" of
+        NONE => raise Fail "git command not found in PATH"
+      | SOME git =>
         let
-          open MLton.Process
-          val gitClone = create
-            { path = "/bin/sh"
-            , args =
-                ["-c", String.concatWith " " ["git", "clone", remoteAddr, dest]]
-            , env = NONE
-            , stderr = Param.null
-            , stdin = Param.null
-            , stdout = Param.null
-            }
+          val tag = latestTag git remoteAddr
+          val dest =
+            Path.home / "pkg" / source / author / (repo ^ "-" ^ tag)
         in
-          case reap gitClone of
-            Posix.Process.W_EXITED =>
-              let
-                val {package, dependencies} =
-                  Manifest.read (dest / "Jinmori.json")
-                  handle IO.Io {cause = OS.SysErr _, ...} =>
-                    (unfetch dest; raise Fail "Not a jinmori package")
-                val dependencies = map (Option.valOf o fromString) dependencies
-              in
-                List.app fetch dependencies
-              end
-          | _ => raise NotFound
+          fetch git remoteAddr tag dest
         end
     end
 end
