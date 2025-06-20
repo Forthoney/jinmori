@@ -20,7 +20,7 @@ struct
   exception Build
 
   structure FS = OS.FileSys
-  structure Proc = OS.Process
+  structure PFS = Posix.FileSys
 
   (* NONE indicates latest version *)
   type t = {source: string, version: string option}
@@ -30,11 +30,8 @@ struct
       open Substring
       val (source, maybeTag) = splitr (fn c => c <> #"@") (full s)
     in
-      if isEmpty maybeTag then
-        {source = string source, version = NONE}
-      else
-        { source = string (trimr 1 source)
-        , version = SOME (string maybeTag) }
+      if isEmpty source then {source = s, version = NONE}
+      else {source = string (trimr 1 source), version = SOME (string maybeTag)}
     end
 
   fun toString {source, version} =
@@ -42,7 +39,7 @@ struct
       SOME v => source ^ "@" ^ v
     | NONE => source
 
-  fun unfetch dest =
+  fun remove dest =
     let
       open OS.FileSys
       fun recursiveRm strm =
@@ -65,7 +62,7 @@ struct
         { path = gitCmd
         , args = ["ls-remote", "--tags", "--sort=version:refname", remoteAddr]
         , env = NONE
-        , stderr = Param.null
+        , stderr = Param.self
         , stdin = Param.null
         , stdout = Param.pipe
         }
@@ -81,7 +78,41 @@ struct
       | _ => raise Fail "Failed to retrieve tag"
     end
 
-  fun fetch {source, version} =
+  fun organize dest =
+    let
+      val projDir = Path.projectRoot (FS.getDir ())
+      val depsDir = projDir / "deps"
+      val _ = if FS.access (depsDir, []) then () else FS.mkDir depsDir
+      val {package = {name, ...}, ...} = Manifest.read (dest / Path.manifest)
+    in
+      PFS.symlink {old = dest, new = depsDir / name}
+    end
+
+  fun download (git, tag, remoteAddr, dest) =
+    let
+      open MLton.Process
+      val gitClone = create
+        { path = git
+        , args = ["clone", "--branch", tag, "--depth", "1", remoteAddr, dest]
+        , env = NONE
+        , stderr = Param.self
+        , stdin = Param.null
+        , stdout = Param.null
+        }
+    in
+      case reap gitClone of
+        Posix.Process.W_EXITED =>
+          let
+            val {package, dependencies} =
+              Manifest.read (dest / Path.manifest)
+              handle IO.Io {cause = OS.SysErr _, ...} =>
+                (remove dest; raise Fail "Not a jinmori package")
+          in
+            List.app (fetch o fromString) dependencies
+          end
+      | _ => raise NotFound
+    end
+  and fetch {source, version} =
     let
       val remoteAddr = "https://" ^ source ^ ".git"
     in
@@ -93,42 +124,12 @@ struct
               case version of
                 SOME v => v
               | NONE => latestTag git remoteAddr
-            val dest = OS.Path.concat (Path.home / "pkg", source ^ "-" ^ tag)
+            val dest = OS.Path.concat (Path.allPkgs, source ^ "@" ^ tag)
+            val _ =
+              if FS.access (dest, []) then ()
+              else download (git, tag, remoteAddr, dest)
           in
-            if FS.access (dest, []) then
-              ()
-            else
-              let
-                open MLton.Process
-                val gitClone = create
-                  { path = git
-                  , args =
-                      [ "clone"
-                      , "--branch"
-                      , tag
-                      , "--depth"
-                      , "1"
-                      , remoteAddr
-                      , dest
-                      ]
-                  , env = NONE
-                  , stderr = Param.self
-                  , stdin = Param.null
-                  , stdout = Param.null
-                  }
-              in
-                case reap gitClone of
-                  Posix.Process.W_EXITED =>
-                    let
-                      val {package, dependencies} =
-                        Manifest.read (dest / "Jinmori.json")
-                        handle IO.Io {cause = OS.SysErr _, ...} =>
-                          (unfetch dest; raise Fail "Not a jinmori package")
-                    in
-                      List.app (fetch o fromString) dependencies
-                    end
-                | _ => raise NotFound
-              end
+            organize dest
           end
     end
 end

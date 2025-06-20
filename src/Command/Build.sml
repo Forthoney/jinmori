@@ -20,13 +20,12 @@ struct
 
   fun run mode =
     let
-      val root = Path.projectRoot (FS.getDir ())
-      val main = root / "src" / "main.mlb"
-      val output = root / "build"
-      val {package, dependencies} = Manifest.read (root / Path.manifest)
+      val projectDir = Path.projectRoot (FS.getDir ())
+      val main = projectDir / "src" / "main.mlb"
+      val output = projectDir / "build"
+      val {package, dependencies} = Manifest.read (projectDir / Path.manifest)
       fun mltonArgs {extension, options} =
         [ "mlton"
-        , "-mlb-path-var 'JINMORI_LIB " ^ Path.home / "pkg" ^ "'"
         , "-output"
         , output / (#name package ^ extension)
         ] @ options @ [main]

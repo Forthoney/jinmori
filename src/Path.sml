@@ -18,6 +18,8 @@ struct
                 SOME dir => dir / ".jinmori"
               | NONE => raise Home))
 
+  val allPkgs = home / "pkg"
+
   fun projectRoot pwd =
     if OS.Path.isRoot pwd then raise ProjectRoot
     else if OS.FileSys.access (pwd / manifest, []) then pwd
