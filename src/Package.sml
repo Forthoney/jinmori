@@ -7,7 +7,7 @@ sig
   type t
 
   val toString: t -> string
-  val fromString: string -> t option
+  val fromString: string -> t
 
   (*!
    * Fetch the path to a package, downloading the package if necessary
@@ -22,33 +22,25 @@ struct
   structure FS = OS.FileSys
   structure Proc = OS.Process
 
-  type t =
-    {source: string, author: string, repo: string, version: string option}
+  (* NONE indicates latest version *)
+  type t = {source: string, version: string option}
 
   fun fromString s =
-    case String.tokens (fn c => c = #"/") s of
-      [source, author, repo] =>
-        let
-          val (repo', maybeTag) =
-            Substring.splitr (fn c => c <> #"@") (Substring.full repo)
-          val (repo, version) =
-            if Substring.isEmpty maybeTag then (repo, NONE)
-            else (Substring.string (Substring.trimr 1 repo'), SOME (Substring.string maybeTag))
-        in
-          SOME
-            {source = source, author = author, repo = repo, version = version}
-        end
-    | _ => NONE
-
-  fun toString {source, author, repo, version} =
     let
-      val version =
-        case version of
-          SOME v => "@" ^ v
-        | NONE => ""
+      open Substring
+      val (source, maybeTag) = splitr (fn c => c <> #"@") (full s)
     in
-      String.concatWith "/" [source, author, repo] ^ version
+      if isEmpty maybeTag then
+        {source = string source, version = NONE}
+      else
+        { source = string (trimr 1 source)
+        , version = SOME (string maybeTag) }
     end
+
+  fun toString {source, version} =
+    case version of
+      SOME v => source ^ "@" ^ v
+    | NONE => source
 
   fun unfetch dest =
     let
@@ -89,10 +81,9 @@ struct
       | _ => raise Fail "Failed to retrieve tag"
     end
 
-  fun fetch {source, author, repo, version} =
+  fun fetch {source, version} =
     let
-      val remoteAddr =
-        String.concatWith "/" ["https://" ^ source, author, repo ^ ".git"]
+      val remoteAddr = "https://" ^ source ^ ".git"
     in
       case Path.which "git" of
         NONE => raise Fail "git command not found in PATH"
@@ -102,7 +93,7 @@ struct
               case version of
                 SOME v => v
               | NONE => latestTag git remoteAddr
-            val dest = Path.home / "pkg" / source / author / (repo ^ "-" ^ tag)
+            val dest = OS.Path.concat (Path.home / "pkg", source ^ "-" ^ tag)
           in
             if FS.access (dest, []) then
               ()
@@ -125,8 +116,6 @@ struct
                   , stdin = Param.null
                   , stdout = Param.null
                   }
-              (* val errMsg = *)
-              (* TextIO.inputAll o Child.textIn o getStdout gitClone *)
               in
                 case reap gitClone of
                   Posix.Process.W_EXITED =>
@@ -136,7 +125,7 @@ struct
                         handle IO.Io {cause = OS.SysErr _, ...} =>
                           (unfetch dest; raise Fail "Not a jinmori package")
                     in
-                      List.app (fetch o Option.valOf o fromString) dependencies
+                      List.app (fetch o fromString) dependencies
                     end
                 | _ => raise NotFound
               end

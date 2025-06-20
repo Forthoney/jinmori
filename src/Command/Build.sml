@@ -18,7 +18,6 @@ struct
 
   structure FS = OS.FileSys
 
-
   fun run mode =
     let
       val root = Path.projectRoot (FS.getDir ())

@@ -8,7 +8,7 @@ struct
   val shortHelp = "Add dependencies to a project"
 
   fun depParser (args, pkgs) =
-    ([], map (Option.valOf o Pkg.fromString) args @ pkgs)
+    ([], map Pkg.fromString args @ pkgs)
 
   val parseOrder = [depParser]
 
