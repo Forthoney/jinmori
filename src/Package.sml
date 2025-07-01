@@ -62,16 +62,15 @@ struct
         { path = gitCmd
         , args = ["ls-remote", "--tags", "--sort=version:refname", remoteAddr]
         , env = NONE
-        , stderr = Param.self
+        , stderr = Param.pipe
         , stdin = Param.null
         , stdout = Param.pipe
         }
+      val stdout = Child.textIn (getStdout lsRemote)
+      val extractTag = string o trimr (String.size "\n") o triml (String.size "refs/tags/") o taker (fn c => c <> #"\t") o full
       val tag =
-        Option.compose
-          ( string o trimr (String.size "\n") o triml (String.size "refs/tags/")
-            o taker (fn c => c <> #"\t") o full
-          , TextIO.inputLine o Child.textIn o getStdout
-          ) lsRemote
+        Option.compose (extractTag, TextIO.inputLine o Child.textIn o getStdout) lsRemote
+      val stderr = Child.textIn (getStderr lsRemote)
     in
       case (tag, reap lsRemote) of
         (SOME tag, Posix.Process.W_EXITED) => tag
