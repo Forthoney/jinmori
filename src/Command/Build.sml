@@ -18,18 +18,16 @@ struct
 
   structure FS = OS.FileSys
 
-
   fun run mode =
     let
       val root = Path.projectRoot (FS.getDir ())
-      val main = root / "src" / "main.mlb"
+      val {package = {name, ...}, dependencies} = Manifest.read (root / Path.manifest)
+      val main = root / "src" / (name ^ ".mlb")
       val output = root / "build"
-      val {package, dependencies} = Manifest.read (root / Path.manifest)
       fun mltonArgs {extension, options} =
         [ "mlton"
-        , "-mlb-path-var 'JINMORI_LIB " ^ Path.home / "pkg" ^ "'"
         , "-output"
-        , output / (#name package ^ extension)
+        , output / (name ^ extension)
         ] @ options @ [main]
         handle IO.Io {cause = OS.SysErr _, ...} =>
           raise Fail "Not a Jinmori project"
