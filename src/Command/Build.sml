@@ -47,10 +47,11 @@ struct
             { path = mlton
             , args = args 
             , env = NONE
-            , stderr = Param.self
+            , stderr = Param.pipe
             , stdin = Param.null
             , stdout = Param.self
             }
+          val stderr = Child.textIn (getStderr mlton)
         in
           case reap mlton of
             Posix.Process.W_EXITED => ()
