@@ -21,13 +21,13 @@ struct
   fun run mode =
     let
       val projectDir = Path.projectRoot (FS.getDir ())
-      val main = projectDir / "src" / "main.mlb"
+      val {package = {name, ...}, dependencies} = Manifest.read (projectDir / Path.manifest)
+      val main = projectDir / "src" / (name ^ ".mlb")
       val output = projectDir / "build"
-      val {package, dependencies} = Manifest.read (projectDir / Path.manifest)
       fun mltonArgs {extension, options} =
         [ "mlton"
         , "-output"
-        , output / (#name package ^ extension)
+        , output / (name ^ extension)
         ] @ options @ [main]
         handle IO.Io {cause = OS.SysErr _, ...} =>
           raise Fail "Not a Jinmori project"

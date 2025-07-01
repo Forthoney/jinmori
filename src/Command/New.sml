@@ -46,7 +46,7 @@ struct
 
       val srcMlb = src / ("src.mlb")
       val mainSml = src / ("Main" ^ ".sml")
-      val projMlb = src / ("main.mlb")
+      val projMlb = src / (main ^ ".mlb")
 
       val testSml = tests / ("Test" ^ ".sml")
       val testsMlb = tests / (proj ^ ".test.mlb")
@@ -74,8 +74,7 @@ struct
           , "  ()"
           ])
       ; writeFile (srcMlb, String.concatWith "\n"
-          [ "(* $(PKGS)/github.com/author/pkgName *)"
-          , "$(SML_LIB)/basis/basis.mlb"
+          [ "$(SML_LIB)/basis/basis.mlb"
           ])
       ; writeFile (projMlb, String.concatWith "\n" ["src.mlb", "Main.sml"])
       ; writeFile
