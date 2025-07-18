@@ -24,24 +24,38 @@ struct
       val {package = {name, ...}, dependencies} = Manifest.read (projectDir / Path.manifest)
       val main = projectDir / "src" / (name ^ ".mlb")
       val output = projectDir / "build"
-      fun mltonArgs {extension, options} =
-        [ "mlton"
-        , "-output"
-        , output / (name ^ extension)
+      fun mltonArgs {ext, options} =
+        [ "-output"
+        , output / (name ^ ext)
         ] @ options @ [main]
         handle IO.Io {cause = OS.SysErr _, ...} =>
           raise Fail "Not a Jinmori project"
-      val _ = if FS.access (output, []) then () else FS.mkDir output
-      val cmd =
-        case mode of
-          Debug =>
-            mltonArgs
-              {extension = ".dbg", options = ["-const 'Exn.keepHistory true'"]}
-        | Release => mltonArgs {extension = "", options = []}
     in
-      if (OS.Process.isSuccess o OS.Process.system o String.concatWith " ") cmd then
-        ()
-      else
-        raise Fail "Build Failed"
+      case Path.which "mlton" of
+        NONE => raise Fail "mlton command was not found in PATH"
+      | SOME mlton =>
+        let
+          val _ = if FS.access (output, []) then () else FS.mkDir output
+          val args =
+            case mode of
+              Debug =>
+                mltonArgs
+                  {ext = ".dbg", options = ["-const", "'Exn.keepHistory true'"]}
+            | Release => mltonArgs {ext = "", options = []}
+          open MLton.Process
+          val mlton = create
+            { path = mlton
+            , args = args 
+            , env = NONE
+            , stderr = Param.pipe
+            , stdin = Param.null
+            , stdout = Param.self
+            }
+          val stderr = Child.textIn (getStderr mlton)
+        in
+          case reap mlton of
+            Posix.Process.W_EXITED => ()
+          | _ => raise Fail "Build Failed"
+        end
     end
 end
