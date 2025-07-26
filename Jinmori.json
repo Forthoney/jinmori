@@ -1,7 +1,9 @@
 {
-  "package": {
-    "name": "jinmori",
-    "version": "0.1.0"
-  },
-  "dependencies": []
-}
+    "package" : {
+        "name" : "jinmori",
+        "version" : "0.1.0"
+      },
+    "dependencies" : [
+        "github.com\/Forthoney\/medjool"
+      ]
+  }

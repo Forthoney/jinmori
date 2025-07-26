@@ -1,22 +1,8 @@
-structure Add: COMMAND =
+structure Add =
 struct
-  structure Pkg = Package
-
-  type config = Pkg.t list
-  type parser = (string list * config) -> (string list * config)
-
-  val shortHelp = "Add dependencies to a project"
-
-  fun depParser (args, pkgs) =
-    ([], map Pkg.fromString args @ pkgs)
-
-  val parseOrder = [depParser]
-
-  val default = []
-
   fun updateConfig projDir pkgs =
     let
-      val deps = map Pkg.toString pkgs
+      val deps = map Package.toString pkgs
       val {package, dependencies} = Manifest.read (projDir / Path.manifest)
       fun add acc =
         fn [] => acc
@@ -32,8 +18,20 @@ struct
         )
     end
 
-  fun run pkgs =
-    let val projDir = Path.projectRoot (OS.FileSys.getDir ())
-    in (List.app Pkg.fetch pkgs; updateConfig projDir pkgs)
+  structure Command = 
+    CommandFn
+      (structure Parser = Parser_PrefixFn (val prefix = "--")
+       type action = Package.t list
+       val desc = "Add dependencies to a project"
+       val flags = []
+       val anonymous = Argument.Any {action = map Package.fromString, metavar = "PKG"}
+      )
+
+  fun run args =
+    let
+      val [pkgs] = Command.run args
+      val projDir = Path.projectRoot (OS.FileSys.getDir ())
+    in
+      (List.app Package.fetch pkgs; updateConfig projDir pkgs)
     end
 end

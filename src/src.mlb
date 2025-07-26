@@ -1,12 +1,14 @@
-$(SML_LIB)/basis/basis.mlb
-$(SML_LIB)/basis/mlton.mlb
-$(SML_LIB)/smlnj-lib/JSON/json-lib.mlb
+local
+	$(SML_LIB)/basis/basis.mlb
+	$(SML_LIB)/basis/mlton.mlb
+	$(SML_LIB)/smlnj-lib/JSON/json-lib.mlb
+in
+	../deps/medjool/src/src.mlb
+	Path.sml
+	Manifest.sml
+	Package.sml
 
-Path.sml
-Manifest.sml
-Package.sml
-
-Command/CommandFn.sml
-Command/New.sml
-Command/Add.sml
-Command/Build.sml
+	Command/Add.sml
+	Command/New.sml
+	Command/Build.sml
+end

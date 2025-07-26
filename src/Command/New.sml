@@ -1,20 +1,13 @@
-structure New: COMMAND =
+structure New =
 struct
-  exception Name of string
   exception Create of string
-
-  type config = {proj: string, main: string, mltonFlags: string}
-  type parser = (string list * config) -> (string list * config)
-
-  val shortHelp = "Create a new SML project"
+  val bin = ref true 
+  val name = ref ""
 
   fun writeFile (path, content) =
     let val out = TextIO.openOut path
     in TextIO.output (out, content); TextIO.closeOut out
     end
-
-  val touchFile = TextIO.closeOut o TextIO.openOut
-
   fun validate s =
     Option.getOpt
       ( Option.compose
@@ -26,19 +19,8 @@ struct
       , false
       )
 
-  fun nameParser ([path], {proj, main, mltonFlags}) =
-        if validate path then
-          ([], {proj = path, main = path, mltonFlags = mltonFlags})
-        else
-          raise (Name path)
-    | nameParser (_, _) =
-        raise (Name "")
-
-  val default =
-    {proj = "", main = "", mltonFlags = "-mlb-path-var PKGS $JINMORI_HOME/pkgs"}
-  val parseOrder = [nameParser]
-
-  fun run {proj, main, mltonFlags} =
+  val touchFile = TextIO.closeOut o TextIO.openOut
+  fun create {proj, main} =
     let
       val src = proj / "src"
       val tests = proj / "tests"
@@ -83,5 +65,25 @@ struct
       ; Manifest.write (manifest, Manifest.default proj)
       )
       handle OS.SysErr (msg, _) => raise Create msg
+    end
+
+  structure Command =
+    CommandFn
+      (structure Parser = Parser_PrefixFn (val prefix = "--")
+       type action = unit
+       val desc = "Create a new SML project"
+       val flags = [
+        {usage = {name = "lib", desc = "Use a library template"}, arg = Argument.None (fn _ => bin := false)}
+      ]
+       val anonymous =
+        Argument.One {action = fn arg => if validate arg then name := arg else raise Fail ("invalid project name: " ^ ! name),
+        metavar = "PATH"}
+      )
+
+  fun run args =
+    let
+      val _ = Command.run args
+    in
+      create {proj = ! name, main = ! name}
     end
 end
