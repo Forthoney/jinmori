@@ -4,7 +4,7 @@ in
   local
 	$(SML_LIB)/basis/basis.mlb
   in
-    src.mlb
+    sources.mlb
     Main.sml
   end
 end

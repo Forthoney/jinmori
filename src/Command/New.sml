@@ -26,7 +26,7 @@ struct
       val tests = proj / "tests"
       val build = proj / "build"
 
-      val srcMlb = src / ("src.mlb")
+      val srcMlb = src / ("sources.mlb")
       val mainSml = src / ("Main" ^ ".sml")
       val projMlb = src / (main ^ ".mlb")
 
