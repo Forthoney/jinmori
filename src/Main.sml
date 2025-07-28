@@ -9,4 +9,5 @@ val _ =
   | "build" :: args => Build.run args
   | "--help" :: args => print "Available subcommands: add, new, build\n"
   | [] => print "Available subcommands: add, new, build\n"
-  | unknown :: args => TextIO.output (TextIO.stdErr, "Unknown subcommand: " ^ unknown ^ "\n");
+  | unknown :: args =>
+      TextIO.output (TextIO.stdErr, "Unknown subcommand: " ^ unknown ^ "\n");

@@ -18,14 +18,14 @@ struct
         )
     end
 
-  structure Command = 
+  structure Command =
     CommandFn
-      (structure Parser = Parser_PrefixFn (val prefix = "--")
+      (structure Parser = Parser_PrefixFn(val prefix = "--")
        type action = Package.t list
        val desc = "Add dependencies to a project"
        val flags = []
-       val anonymous = Argument.Any {action = map Package.fromString, metavar = "PKG"}
-      )
+       val anonymous =
+         Argument.Any {action = map Package.fromString, metavar = "PKG"})
 
   fun run args =
     let

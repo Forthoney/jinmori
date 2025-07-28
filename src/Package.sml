@@ -67,9 +67,12 @@ struct
         , stdout = Param.pipe
         }
       val stdout = Child.textIn (getStdout lsRemote)
-      val extractTag = string o trimr (String.size "\n") o triml (String.size "refs/tags/") o taker (fn c => c <> #"\t") o full
+      val extractTag =
+        string o trimr (String.size "\n") o triml (String.size "refs/tags/")
+        o taker (fn c => c <> #"\t") o full
       val tag =
-        Option.compose (extractTag, TextIO.inputLine o Child.textIn o getStdout) lsRemote
+        Option.compose (extractTag, TextIO.inputLine o Child.textIn o getStdout)
+          lsRemote
       val stderr = Child.textIn (getStderr lsRemote)
     in
       case (tag, reap lsRemote) of
