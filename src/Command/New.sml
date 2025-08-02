@@ -78,7 +78,11 @@ struct
                    "Set the resulting package name, defaults to the directory name"
                }
            , arg = Argument.One
-               { action = fn s => name := Argument.satisfies "Expected valid SML structure name" validate s
+               { action = fn s =>
+                   name
+                   :=
+                   Argument.satisfies "Expected valid SML structure name"
+                     validate s
                , metavar = "NAME"
                }
            }
@@ -87,7 +91,12 @@ struct
          { action = fn s =>
              case (!name, (rev o #arcs o OS.Path.fromString) s) of
                ("", name' :: _) =>
-                 (name := Argument.satisfies "Expected valid SML structure name" validate name'; path := s)
+                 ( name
+                   :=
+                   Argument.satisfies "Expected valid SML structure name"
+                     validate name'
+                 ; path := s
+                 )
              | ("", _) => raise Fail ("Invalid path: " ^ s)
              | _ => path := s
          , metavar = "PATH"

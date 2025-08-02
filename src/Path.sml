@@ -1,7 +1,8 @@
 structure Path =
 struct
   exception Home
-  exception ProjectRoot
+  exception Root
+  exception Command of string
 
   val manifest = "Jinmori.json"
 
@@ -19,7 +20,7 @@ struct
   val allPkgs = home / "pkg"
 
   fun projectRoot pwd =
-    if OS.Path.isRoot pwd then raise ProjectRoot
+    if OS.Path.isRoot pwd then raise Root
     else if OS.FileSys.access (pwd / manifest, []) then pwd
     else projectRoot (OS.Path.getParent pwd)
 
@@ -29,7 +30,7 @@ struct
       open OS.FileSys
       val path = Option.getOpt (getEnv "PATH", "/bin:/usr/bin")
       val paths = String.fields (fn c => c = #":") path
-      fun searchDir [] = NONE
+      fun searchDir [] = raise Command cmd
         | searchDir (dir :: rest) =
             let
               val strm = SOME (openDir dir) handle OS.SysErr _ => NONE
@@ -48,7 +49,7 @@ struct
                             loop ()
                   in
                     case loop () of
-                      SOME path => SOME path
+                      SOME path => path
                     | NONE => searchDir rest
                   end
             end

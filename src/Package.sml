@@ -1,29 +1,23 @@
 structure Package:
 sig
-  exception Destination of string
-  exception NotFound
-  exception Build
-
   type t
+  exception NotFound of t
+  exception Tag of string
 
   val toString: t -> string
   val fromString: string -> t
 
-  (*!
-   * Fetch the path to a package, downloading the package if necessary
-   *)
+  (* Fetch the path to a package, downloading the package if necessary *)
   val fetch: t -> unit
 end =
 struct
-  exception Destination of string
-  exception NotFound
-  exception Build
+  (* NONE indicates latest version *)
+  type t = {source: string, version: string option}
+  exception NotFound of t
+  exception Tag of string
 
   structure FS = OS.FileSys
   structure PFS = Posix.FileSys
-
-  (* NONE indicates latest version *)
-  type t = {source: string, version: string option}
 
   fun fromString s =
     let
@@ -77,61 +71,64 @@ struct
     in
       case (tag, reap lsRemote) of
         (SOME tag, Posix.Process.W_EXITED) => tag
-      | _ => raise Fail "Failed to retrieve tag"
+      | _ => raise Tag remoteAddr
     end
 
-  fun organize dest =
+  fun addToDeps dest =
     let
       val projDir = Path.projectRoot (FS.getDir ())
       val depsDir = projDir / "deps"
       val _ = if FS.access (depsDir, []) then () else FS.mkDir depsDir
       val {package = {name, ...}, ...} = Manifest.read (dest / Path.manifest)
+      val to = depsDir / name
     in
-      PFS.symlink {old = dest, new = depsDir / name}
+      PFS.symlink {old = dest, new = to}
+      handle OS.SysErr (msg, SOME e) =>
+        if e = Posix.Error.exist then
+          if PFS.readlink (depsDir / name) = dest then ()
+          else
+            (PFS.unlink to; PFS.symlink {old = dest, new = to})
+        else
+          raise Fail ("Failed to symlink " ^ dest ^ " with error: " ^ msg)
     end
 
-  fun download (git, tag, remoteAddr, dest) =
-    let
-      open MLton.Process
-      val gitClone = create
-        { path = git
-        , args = ["clone", "--branch", tag, "--depth", "1", remoteAddr, dest]
-        , env = NONE
-        , stderr = Param.self
-        , stdin = Param.null
-        , stdout = Param.null
-        }
-    in
-      case reap gitClone of
-        Posix.Process.W_EXITED =>
-          let
-            val {package, dependencies} =
-              Manifest.read (dest / Path.manifest)
-              handle IO.Io {cause = OS.SysErr _, ...} =>
-                (remove dest; raise Fail "Not a jinmori package")
-          in
-            List.app (fetch o fromString) dependencies
-          end
-      | _ => raise NotFound
-    end
-  and fetch {source, version} =
+  fun fetch (pkg as {source, version}) =
     let
       val remoteAddr = "https://" ^ source ^ ".git"
+      fun download (git, tag, dest) =
+        let
+          open MLton.Process
+          val gitClone = create
+            { path = git
+            , args =
+                ["clone", "--branch", tag, "--depth", "1", remoteAddr, dest]
+            , env = NONE
+            , stderr = Param.self
+            , stdin = Param.null
+            , stdout = Param.null
+            }
+        in
+          case reap gitClone of
+            Posix.Process.W_EXITED =>
+              let
+                val {package, dependencies} =
+                  Manifest.read (dest / Path.manifest)
+                  handle IO.Io {cause = OS.SysErr _, ...} =>
+                    (remove dest; raise Fail "Not a jinmori package")
+              in
+                List.app (fetch o fromString) dependencies
+              end
+          | _ => raise NotFound pkg
+        end
+      val git = Path.which "git"
+      val tag =
+        case version of
+          SOME v => v
+        | NONE => latestTag git remoteAddr
+      val dest = OS.Path.concat (Path.allPkgs, source ^ "@" ^ tag)
+      val _ =
+        if FS.access (dest, []) then () else download (git, tag, dest)
     in
-      case Path.which "git" of
-        NONE => raise Fail "git command not found in PATH"
-      | SOME git =>
-          let
-            val tag =
-              case version of
-                SOME v => v
-              | NONE => latestTag git remoteAddr
-            val dest = OS.Path.concat (Path.allPkgs, source ^ "@" ^ tag)
-            val _ =
-              if FS.access (dest, []) then ()
-              else download (git, tag, remoteAddr, dest)
-          in
-            organize dest
-          end
+      addToDeps dest
     end
 end

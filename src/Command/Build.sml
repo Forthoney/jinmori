@@ -33,31 +33,26 @@ struct
         ["-output", output / (name ^ ext)] @ options @ [main]
         handle IO.Io {cause = OS.SysErr _, ...} =>
           raise Fail "Not a Jinmori project"
+      val mlton = Path.which "mlton"
+      val _ = if FS.access (output, []) then () else FS.mkDir output
+      val args =
+        if !debug then
+          mltonArgs
+            {ext = ".dbg", options = ["-const", "'Exn.keepHistory true'"]}
+        else
+          mltonArgs {ext = "", options = []}
+      open MLton.Process
+      val mlton = create
+        { path = mlton
+        , args = args
+        , env = NONE
+        , stderr = Param.self
+        , stdin = Param.null
+        , stdout = Param.self
+        }
     in
-      case Path.which "mlton" of
-        NONE => raise Fail "mlton command was not found in PATH"
-      | SOME mlton =>
-          let
-            val _ = if FS.access (output, []) then () else FS.mkDir output
-            val args =
-              if !debug then
-                mltonArgs
-                  {ext = ".dbg", options = ["-const", "'Exn.keepHistory true'"]}
-              else
-                mltonArgs {ext = "", options = []}
-            open MLton.Process
-            val mlton = create
-              { path = mlton
-              , args = args
-              , env = NONE
-              , stderr = Param.self
-              , stdin = Param.null
-              , stdout = Param.self
-              }
-          in
-            case reap mlton of
-              Posix.Process.W_EXITED => ()
-            | _ => raise Fail "Build Failed"
-          end
+      case reap mlton of
+        Posix.Process.W_EXITED => ()
+      | _ => raise Fail "Build Failed"
     end
 end
