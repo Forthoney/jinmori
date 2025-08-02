@@ -2,7 +2,7 @@ structure Package:
 sig
   type t
   exception NotFound of t
-  exception Tag of string
+  exception Tag of {remote: string, stderr: string}
 
   val toString: t -> string
   val fromString: string -> t
@@ -14,7 +14,7 @@ struct
   (* NONE indicates latest version *)
   type t = {source: string, version: string option}
   exception NotFound of t
-  exception Tag of string
+  exception Tag of {remote: string, stderr: string}
 
   structure FS = OS.FileSys
   structure PFS = Posix.FileSys
@@ -67,11 +67,20 @@ struct
       val tag =
         Option.compose (extractTag, TextIO.inputLine o Child.textIn o getStdout)
           lsRemote
-      val stderr = Child.textIn (getStderr lsRemote)
+      val stderr =
+        let
+          val strm = Child.textIn (getStderr lsRemote)
+          fun loop () =
+            case TextIO.inputLine strm of
+              SOME s => s ^ loop ()
+            | NONE => ""
+        in
+          loop ()
+        end
     in
       case (tag, reap lsRemote) of
         (SOME tag, Posix.Process.W_EXITED) => tag
-      | _ => raise Tag remoteAddr
+      | _ => raise Tag {remote = remoteAddr, stderr = stderr}
     end
 
   fun addToDeps dest =
@@ -102,7 +111,7 @@ struct
             , args =
                 ["clone", "--branch", tag, "--depth", "1", remoteAddr, dest]
             , env = NONE
-            , stderr = Param.self
+            , stderr = Param.null
             , stdin = Param.null
             , stdout = Param.null
             }

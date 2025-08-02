@@ -1,5 +1,7 @@
 structure Build =
 struct
+  exception Compile of string
+
   val debug = ref true
   structure Command =
     CommandFn
@@ -46,13 +48,23 @@ struct
         { path = mlton
         , args = args
         , env = NONE
-        , stderr = Param.self
+        , stderr = Param.pipe
         , stdin = Param.null
         , stdout = Param.self
         }
+      val stderr =
+        let
+          val strm = Child.textIn (getStderr mlton)
+          fun loop () =
+            case TextIO.inputLine strm of
+              SOME s => s ^ loop ()
+            | NONE => ""
+        in
+          loop ()
+        end
     in
       case reap mlton of
         Posix.Process.W_EXITED => ()
-      | _ => raise Fail "Build Failed"
+      | _ => raise Compile stderr
     end
 end
