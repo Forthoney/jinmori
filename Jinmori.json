@@ -4,6 +4,6 @@
         "version" : "0.1.0"
       },
     "dependencies" : [
-        "github.com\/Forthoney\/medjool"
+        "github.com\/Forthoney\/medjool@v0.1.1"
       ]
   }

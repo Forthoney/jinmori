@@ -4,7 +4,7 @@ local
 	$(SML_LIB)/smlnj-lib/JSON/json-lib.mlb
 	PathInfix.sml
 in
-	../deps/medjool/src/src.mlb
+	../deps/medjool/src/sources.mlb
 	Path.sml
 	Manifest.sml
 	Package.sml
