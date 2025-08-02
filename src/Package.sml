@@ -86,8 +86,7 @@ struct
       handle OS.SysErr (msg, SOME e) =>
         if e = Posix.Error.exist then
           if PFS.readlink (depsDir / name) = dest then ()
-          else
-            (PFS.unlink to; PFS.symlink {old = dest, new = to})
+          else (PFS.unlink to; PFS.symlink {old = dest, new = to})
         else
           raise Fail ("Failed to symlink " ^ dest ^ " with error: " ^ msg)
     end
@@ -126,8 +125,7 @@ struct
           SOME v => v
         | NONE => latestTag git remoteAddr
       val dest = OS.Path.concat (Path.allPkgs, source ^ "@" ^ tag)
-      val _ =
-        if FS.access (dest, []) then () else download (git, tag, dest)
+      val _ = if FS.access (dest, []) then () else download (git, tag, dest)
     in
       addToDeps dest
     end
