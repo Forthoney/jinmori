@@ -9,8 +9,13 @@ in
 	Manifest.sml
 	Package.sml
 
+	CompilerInfo.sig
+	CompilerInfo.sml
+	Compile.fun
+
 	Subcommand/Subcommand.sig
 	Subcommand/Add.sml
 	Subcommand/New.sml
+	Subcommand/Install.sml
 	Subcommand/Build.sml
 end

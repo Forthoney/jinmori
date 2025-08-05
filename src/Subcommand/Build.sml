@@ -1,22 +1,20 @@
 structure Build =
 struct
-  exception Compile of string
-
-  val debugMode = ref true
-  val compilerFlags = ref []
+  val debug = ref true
+  val additionalOpts = ref []
 
   local
-    val debug =
+    val dbg =
       { usage =
           { name = "debug"
           , desc =
               "Build with debug mode, with stack traces attached to uncaught exceptions"
           }
-      , arg = Argument.None (fn _ => debugMode := true)
+      , arg = Argument.None (fn _ => debug := true)
       }
     val release =
       { usage = {name = "release", desc = "Build with release mode"}
-      , arg = Argument.None (fn _ => debugMode := false)
+      , arg = Argument.None (fn _ => debug := false)
       }
   in
     structure Command =
@@ -24,12 +22,15 @@ struct
         (structure Parser = Parser_PrefixFn(val prefix = "--")
          type action = unit
          val desc = "Build a Jinmori executable"
-         val flags = [debug, release]
+         val flags = [dbg, release]
          val anonymous = Argument.Any
-           { action = fn flags => compilerFlags := flags
+           { action = fn flags => additionalOpts := flags
            , metavar = "COMPILER_FLAG"
            })
   end
+
+  structure MLton = CompileFn(Compiler.MLton)
+
   structure FS = OS.FileSys
 
   fun run args =
@@ -38,42 +39,15 @@ struct
       val projectDir = Path.projectRoot (FS.getDir ())
       val {package = {name, ...}, dependencies} =
         Manifest.read (projectDir / Path.manifest)
-      val main = projectDir / "src" / (name ^ ".mlb")
-      val output = projectDir / "build"
-      fun mltonArgs {ext, options} =
-        ["-output", output / (name ^ ext)] @ options @ !compilerFlags @ [main]
-        handle IO.Io {cause = OS.SysErr _, ...} =>
-          raise Fail "Not a Jinmori project"
-      val mlton = Path.which "mlton"
-      val _ = if FS.access (output, []) then () else FS.mkDir output
-      val args =
-        if !debugMode then
-          mltonArgs
-            {ext = ".dbg", options = ["-const", "'Exn.keepHistory true'"]}
-        else
-          mltonArgs {ext = "", options = []}
-      open MLton.Process
-      val mlton = create
-        { path = mlton
-        , args = args
-        , env = NONE
-        , stderr = Param.pipe
-        , stdin = Param.null
-        , stdout = Param.self
-        }
-      val stderr =
-        let
-          val strm = Child.textIn (getStderr mlton)
-          fun loop () =
-            case TextIO.inputLine strm of
-              SOME s => s ^ loop ()
-            | NONE => ""
-        in
-          loop ()
-        end
+      val entryPoint = projectDir / "src" / (name ^ ".mlb")
+      val buildDir = projectDir / "build"
+      val _ = if FS.access (buildDir, []) then () else FS.mkDir buildDir
     in
-      case reap mlton of
-        Posix.Process.W_EXITED => ()
-      | _ => raise Compile stderr
+      MLton.compile
+        { entryPoint = entryPoint
+        , output = buildDir / name
+        , additional = !additionalOpts
+        , debug = !debug
+        }
     end
 end

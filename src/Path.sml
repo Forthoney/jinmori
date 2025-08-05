@@ -6,7 +6,7 @@ struct
 
   val manifest = "Jinmori.json"
 
-  val home =
+  fun home () =
     case OS.Process.getEnv "JINMORI_HOME" of
       SOME dir => dir
     | NONE =>
@@ -16,8 +16,6 @@ struct
              (case OS.Process.getEnv "USERPROFILE" of
                 SOME dir => dir / ".jinmori"
               | NONE => raise Home))
-
-  val allPkgs = home / "pkg"
 
   fun projectRoot pwd =
     if OS.Path.isRoot pwd then raise Root

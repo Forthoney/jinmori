@@ -9,6 +9,7 @@ val _ =
        "add" :: args => Add.run args
      | "new" :: args => New.run args
      | "build" :: args => Build.run args
+     | "install" :: args => Install.run args
      | "--help" :: args => print "Available subcommands: add, new, build\n"
      | [] => print "Available subcommands: add, new, build\n"
      | unknown :: args => err ("Unknown subcommand: " ^ unknown ^ "\n"))
@@ -23,6 +24,6 @@ val _ =
     | Path.Home =>
         err ("Jinmori home directory (~/.jinmori by default) not found")
     | Path.Root => err ("Jinmori root (Jinmori.json) not found")
-    | Build.Compile stderr =>
+    | Compiler.Compile stderr =>
         err ("Compilation failed with the following output:\n" ^ stderr)
   end

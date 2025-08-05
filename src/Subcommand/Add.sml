@@ -32,6 +32,6 @@ struct
       val [pkgs] = Command.run args
       val projDir = Path.projectRoot (OS.FileSys.getDir ())
     in
-      (List.app Package.fetch pkgs; updateConfig projDir pkgs)
+      (List.app (Package.addToDeps o Package.fetch) pkgs; updateConfig projDir pkgs)
     end
 end

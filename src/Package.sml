@@ -7,8 +7,12 @@ sig
   val toString: t -> string
   val fromString: string -> t
 
-  (* Fetch the path to a package, downloading the package if necessary *)
-  val fetch: t -> unit
+  (* Fetch a package, downloading the package if necessary
+     Returns the path to the package's root directory *)
+  val fetch: t -> string
+
+  (* Adds a package at the provided path as a dependency for the current project *)
+  val addToDeps: string -> unit
 end =
 struct
   (* NONE indicates latest version *)
@@ -124,7 +128,7 @@ struct
                   handle IO.Io {cause = OS.SysErr _, ...} =>
                     (remove dest; raise Fail "Not a jinmori package")
               in
-                List.app (fetch o fromString) dependencies
+                List.app (ignore o fetch o fromString) dependencies
               end
           | _ => raise NotFound pkg
         end
@@ -133,9 +137,9 @@ struct
         case version of
           SOME v => v
         | NONE => latestTag git remoteAddr
-      val dest = OS.Path.concat (Path.allPkgs, source ^ "@" ^ tag)
+      val dest = OS.Path.concat (Path.home () / "pkg", source ^ "@" ^ tag)
       val _ = if FS.access (dest, []) then () else download (git, tag, dest)
     in
-      addToDeps dest
+      dest
     end
 end
