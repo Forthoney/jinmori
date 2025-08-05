@@ -20,7 +20,7 @@ jobs:
 
       - name: Build main project
         run: |
-          bash bootstrap.sh
+          yes | bash bootstrap.sh
 
       - name: Download try
         run: |

@@ -3,8 +3,8 @@ while true; do
   echo "This script must be run in the root directory of Jinmori. Do you want to continue? [y/n] "
   read answer
   case "$answer" in
-    [Yy] * ) echo "Continuing..."; break;;
-    [Nn] * ) echo "Aborting."; exit 1;;
+    y ) echo "Continuing..."; break;;
+    n ) echo "Aborting."; exit 1;;
     * ) echo "Invalid answer.";;
   esac
 done
