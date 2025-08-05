@@ -25,7 +25,8 @@ jobs:
       - name: Download try
         run: |
           curl -LO https://github.com/binpash/try/archive/refs/tags/v0.2.0.tar.gz
-          tar -xvzf v0.2.0.tar.gz
+          tar -xzf v0.2.0.tar.gz
+          try-v0.2.0/try echo 'try successful'
 
       - name: Run tests
         run: |
