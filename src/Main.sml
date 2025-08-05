@@ -10,8 +10,8 @@ val _ =
      | "new" :: args => New.run args
      | "build" :: args => Build.run args
      | "install" :: args => Install.run args
-     | "--help" :: args => print "Available subcommands: add, new, build\n"
-     | [] => print "Available subcommands: add, new, build\n"
+     | "--help" :: args => print "Available subcommands: add, new, build, install\n"
+     | [] => print "Available subcommands: add, new, build, install\n"
      | unknown :: args => err ("Unknown subcommand: " ^ unknown ^ "\n"))
     handle
       Package.NotFound pkg =>

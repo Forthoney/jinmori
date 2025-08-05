@@ -1,11 +1,11 @@
 #!/bin/sh
 
-# This crazy TOP variable hack is taken from try's test suite
+# This TOP variable hack is taken from try's test suite
 JINMORI_TOP="${JINMORI_TOP:-$(git rev-parse --show-toplevel --show-superproject-working-tree 2>/dev/null || echo "${0%/*}")}"
-JINMORI="$JINMORI_TOP/bin/jinmori.dbg"
-TESTS="$JINMORI_TOP/tests/end2end"
+JINMORI="$JINMORI_TOP/build/jinmori.dbg"
+TESTS="$JINMORI_TOP/test/cli/new"
 PWD="$(pwd)"
-export PWD JINMORI_TOP JINMORI TRY TESTS PWD
+export PWD JINMORI_TOP JINMORI TESTS PWD
 
 EXPECTED=$(mktemp)
 ACTUAL=$(mktemp)
@@ -28,6 +28,10 @@ cleanup() {
 }
 
 trap 'cleanup' EXIT
+
+if [ -z "$TRY" ]; then
+	echo "Please set \$TRY to the path of your try script" >&2
+fi
 
 checkexpect() {
 	path_capture_group="\(.*\)"     # capture group 1 - any chars
@@ -60,7 +64,7 @@ if [ -d "$HOME/.jinmori" ]; then
 	echo "Existing jinmori installation found at $HOME/.jinmori" >&2
 	SAVE=$(mktemp -d)
 	mv "$HOME/.jinmori" "$SAVE"
-	echo "Temporarily moving $HOME/.jinmori to $SAVE. We'll try to restore it at the end, but if something goes wrong, you can find it there" >&2
+	printf "Temporarily moving $HOME/.jinmori to $SAVE. We'll try to restore it at the end, but if something goes wrong, you can find it there\n\n" >&2
 fi
 
 errs=0

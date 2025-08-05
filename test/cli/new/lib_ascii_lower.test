@@ -1,0 +1,14 @@
+Making a new library with all lowercase ascii project name
+$JINMORI new --lib project
+0
+(created dir)	$PWD/project
+(created dir)	$PWD/project/src
+(created dir)	$PWD/project/test
+
+(added)	$PWD/project/Jinmori.json
+(added)	$PWD/project/.gitignore
+
+(added)	$PWD/project/src/sources.mlb
+
+(added)	$PWD/project/test/Test.sml
+(added)	$PWD/project/test/project.test.mlb

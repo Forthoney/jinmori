@@ -17,21 +17,23 @@ struct
         end
       val touchFile = TextIO.closeOut o TextIO.openOut
       val src = path / "src"
-      val tests = path / "tests"
+      val test = path / "test"
       val build = path / "build"
 
       val srcMlb = src / ("sources.mlb")
       val mainSml = src / ("Main" ^ ".sml")
       val projMlb = src / (name ^ ".mlb")
 
-      val testSml = tests / ("Test" ^ ".sml")
-      val testsMlb = tests / (name ^ ".test.mlb")
+      val testSml = test / ("Test" ^ ".sml")
+      val testsMlb = test / (name ^ ".test.mlb")
 
       val manifest = path / Path.manifest
       val gitignore = path / ".gitignore"
+      val _ = List.app OS.FileSys.mkDir [path, src, test]
       val _ =
         if bin then
-          ( writeFile (projMlb, String.concatWith "\n" ["src.mlb", "Main.sml"])
+          ( OS.FileSys.mkDir build
+          ; writeFile (projMlb, String.concatWith "\n" ["sources.mlb", "Main.sml"])
           ; writeFile (mainSml, String.concatWith "\n"
               [ "val hello = \"Hello, \""
               , "val world = \"World!\""
@@ -42,8 +44,7 @@ struct
         else
           ()
     in
-      ( List.app OS.FileSys.mkDir [path, src, tests, build]
-      ; writeFile (testSml, String.concatWith "\n"
+      ( writeFile (testSml, String.concatWith "\n"
           [ "if true = false then"
           , "  raise Fail \"The fabric of reality crumbles...\""
           , "else"
