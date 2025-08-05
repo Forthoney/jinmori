@@ -1,10 +1,6 @@
-ann
-  "allowOrPats true"
+local
+$(SML_LIB)/basis/basis.mlb
 in
-  local
-	$(SML_LIB)/basis/basis.mlb
-  in
-    sources.mlb
-    Main.sml
-  end
+  sources.mlb
+  Main.sml
 end

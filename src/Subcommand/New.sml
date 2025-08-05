@@ -1,4 +1,4 @@
-structure New =
+structure New: SUBCOMMAND =
 struct
   exception Create of string
 
@@ -61,49 +61,50 @@ struct
 
   val bin = ref true
   val path = ref ""
-  val name = ref ""
+  val pkgName = ref ""
 
-  structure Command =
-    CommandFn
-      (structure Parser = Parser_PrefixFn(val prefix = "--")
-       type action = unit
-       val desc = "Create a new SML project"
-       val flags =
-         [ { usage = {name = "lib", desc = "Use a library template"}
-           , arg = Argument.None (fn _ => bin := false)
-           }
-         , { usage =
-               { name = "name"
-               , desc =
-                   "Set the resulting package name, defaults to the directory name"
-               }
-           , arg = Argument.One
-               { action = fn s =>
-                   name
-                   :=
-                   Argument.satisfies "Expected valid SML structure name"
-                     validate s
-               , metavar = "NAME"
-               }
-           }
-         ]
-       val anonymous = Argument.One
-         { action = fn s =>
-             case (!name, (rev o #arcs o OS.Path.fromString) s) of
-               ("", name' :: _) =>
-                 ( name
-                   :=
-                   Argument.satisfies "Expected valid SML structure name"
-                     validate name'
-                 ; path := s
-                 )
-             | ("", _) => raise Fail ("Invalid path: " ^ s)
-             | _ => path := s
-         , metavar = "PATH"
-         })
+  local
+    val lib =
+      { usage = {name = "lib", desc = "Use a library template"}
+      , arg = Argument.None (fn _ => bin := false)
+      }
+    val name =
+      { usage =
+          { name = "name"
+          , desc =
+              "Set the resulting package name, defaults to the directory name"
+          }
+      , arg = Argument.One
+          { action = fn s =>
+              pkgName
+              :=
+              Argument.satisfies "Expected valid SML structure name" validate s
+          , metavar = "NAME"
+          }
+      }
+  in
+    structure Command =
+      CommandFn
+        (structure Parser = Parser_PrefixFn(val prefix = "--")
+         type action = unit
+         val desc = "Create a new SML project"
+         val flags = [lib, name]
+         val anonymous = Argument.One
+           { action = fn s =>
+               case (!pkgName, (rev o #arcs o OS.Path.fromString) s) of
+                 ("", name' :: _) =>
+                   ( pkgName
+                     :=
+                     Argument.satisfies "Expected valid SML structure name"
+                       validate name'
+                   ; path := s
+                   )
+               | ("", _) => raise Fail ("Invalid path: " ^ s)
+               | _ => path := s
+           , metavar = "PATH"
+           })
+  end
 
   fun run args =
-    let val _ = Command.run args
-    in create {bin = !bin, path = !path, name = !name}
-    end
+    (Command.run args; create {bin = !bin, path = !path, name = !pkgName})
 end

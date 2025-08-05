@@ -1,4 +1,4 @@
-structure Add =
+structure Add: SUBCOMMAND =
 struct
   fun updateConfig projDir pkgs =
     let
