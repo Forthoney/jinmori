@@ -1,4 +1,6 @@
 #!/bin/sh
+set -e
+
 while true; do
   echo "This script must be run in the root directory of Jinmori. Do you want to continue? [y/n] "
   read answer
@@ -13,7 +15,7 @@ jinmori_home="$HOME/.jinmori"
 mkdir "$jinmori_home" "$jinmori_home/pkg" "$jinmori_home/bin"
 
 dest="$jinmori_home/pkg/medjool"
-git clone --branch v0.1.1 --depths 1 https://github.com/Forthoney/medjool.git "$dest"
+git clone --branch v0.1.1 --depth 1 https://github.com/Forthoney/medjool.git "$dest"
 ln --symbolic "$dest" "deps/medjool"
 
 bin_dest="$jinmori_home/bin/jinmori"
