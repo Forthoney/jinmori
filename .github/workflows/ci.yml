@@ -22,8 +22,12 @@ jobs:
         run: |
           yes | bash bootstrap.sh
 
+      - name: Allow unprivileged user namespaces (for Ubuntu 24.04)
+        run: sudo sysctl kernel.apparmor_restrict_unprivileged_userns=0
+      
       - name: Download try
         run: |
+          cd
           curl -LO https://github.com/binpash/try/archive/refs/tags/v0.2.0.tar.gz
           tar -xzf v0.2.0.tar.gz
           try-0.2.0/try echo 'try successful'
