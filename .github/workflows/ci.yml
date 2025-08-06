@@ -27,7 +27,7 @@ jobs:
       
       - name: Download try
         run: |
-          sudo apt-get mergerfs
+          sudo apt-get install mergerfs
           cd
           curl -LO https://github.com/binpash/try/archive/refs/tags/v0.2.0.tar.gz
           tar -xzf v0.2.0.tar.gz
