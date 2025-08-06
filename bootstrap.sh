@@ -12,7 +12,7 @@ while true; do
 done
 
 jinmori_home="$HOME/.jinmori"
-mkdir "$jinmori_home" "$jinmori_home/pkg" "$jinmori_home/bin"
+mkdir "$jinmori_home" "$jinmori_home/pkg" "$jinmori_home/bin" deps
 
 dest="$jinmori_home/pkg/medjool"
 git clone --branch v0.1.1 --depth 1 https://github.com/Forthoney/medjool.git "$dest"
