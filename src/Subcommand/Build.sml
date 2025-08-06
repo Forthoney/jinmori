@@ -2,6 +2,7 @@ structure Build =
 struct
   val debug = ref true
   val additionalOpts = ref []
+  val binary = ref ""
 
   local
     val dbg =
@@ -16,13 +17,17 @@ struct
       { usage = {name = "release", desc = "Build with release mode"}
       , arg = Argument.None (fn _ => debug := false)
       }
+    val bin =
+      { usage = {name = "bin", desc = "Specify binary to build"}
+      , arg = Argument.One {action = fn s => binary := s, metavar = "NAME"}
+      }
   in
     structure Command =
       CommandFn
         (structure Parser = Parser_PrefixFn(val prefix = "--")
          type action = unit
          val desc = "Build a Jinmori executable"
-         val flags = [dbg, release]
+         val flags = [dbg, release, bin]
          val anonymous = Argument.Any
            { action = fn flags => additionalOpts := flags
            , metavar = "COMPILER_FLAG"
@@ -40,7 +45,10 @@ struct
       val {package = {name, ...}, dependencies} =
         Manifest.read (projectDir / Path.manifest)
       val _ = app (Package.addToDeps o Package.fetch o Package.fromString) dependencies
-      val entryPoint = projectDir / "src" / (name ^ ".mlb")
+      val entryPoint =
+        case ! binary of
+          "" => projectDir / "src" / (name ^ ".mlb")
+        | filename => projectDir / "src" / (filename ^ ".mlb")
       val buildDir = projectDir / "build"
       val _ = if FS.access (buildDir, []) then () else FS.mkDir buildDir
     in
