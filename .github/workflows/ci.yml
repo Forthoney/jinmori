@@ -35,4 +35,4 @@ jobs:
 
       - name: Run tests
         run: |
-          TRY=try-0.2.0/try test/cli/new/runner
+          TRY=~/try-0.2.0/try test/cli/new/runner
