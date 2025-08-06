@@ -27,10 +27,10 @@ jobs:
       - name: Download try
         run: |
           sudo apt-get install -y mergerfs
+          cd
           curl -LO https://github.com/binpash/try/archive/refs/tags/v0.2.0.tar.gz
           tar -xzf v0.2.0.tar.gz
           try-0.2.0/try echo 'try successful'
-        working-directory: ${{ env.HOME }}
 
       - name: Run tests
         run: TRY=~/try-0.2.0/try test/cli/new/runner
