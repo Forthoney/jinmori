@@ -33,4 +33,6 @@ jobs:
           try-0.2.0/try echo 'try successful'
 
       - name: Run tests
-        run: TRY=~/try-0.2.0/try test/cli/new/runner
+        run: |
+          TRY=~/try-0.2.0/try test/cli/new/runner
+          TRY=~/try-0.2.0/try test/integration/runner

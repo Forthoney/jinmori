@@ -1,6 +1,13 @@
 local
-$(SML_LIB)/basis/basis.mlb
-in
+  $(SML_LIB)/basis/basis.mlb
   sources.mlb
+  PathInfix.sml
+in
+  Subcommand/Subcommand.sig
+  Subcommand/Add.sml
+  Subcommand/New.sml
+  Subcommand/Install.sml
+  Subcommand/Fetch.sml
+  Subcommand/Build.sml
   Main.sml
 end

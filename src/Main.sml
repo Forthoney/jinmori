@@ -9,9 +9,10 @@ val _ =
        "add" :: args => Add.run args
      | "new" :: args => New.run args
      | "build" :: args => Build.run args
+     | "fetch" :: args => Fetch.run args
      | "install" :: args => Install.run args
-     | "--help" :: args => print "Available subcommands: add, new, build, install\n"
-     | [] => print "Available subcommands: add, new, build, install\n"
+     | "--help" :: args => print "Available subcommands: add, new, build, fetch, install\n"
+     | [] => print "Available subcommands: add, new, build, fetch, install\n"
      | unknown :: args => err ("Unknown subcommand: " ^ unknown ^ "\n"))
     handle
       Package.NotFound pkg =>

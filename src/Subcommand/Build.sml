@@ -39,6 +39,7 @@ struct
       val projectDir = Path.projectRoot (FS.getDir ())
       val {package = {name, ...}, dependencies} =
         Manifest.read (projectDir / Path.manifest)
+      val _ = app (Package.addToDeps o Package.fetch o Package.fromString) dependencies
       val entryPoint = projectDir / "src" / (name ^ ".mlb")
       val buildDir = projectDir / "build"
       val _ = if FS.access (buildDir, []) then () else FS.mkDir buildDir
