@@ -19,9 +19,7 @@ jobs:
           sudo apt-get install -y mlton
 
       - name: Build main project
-        run:
-          yes | bash bootstrap.sh
-          echo "./jinmori/bin" >> "$GITHUB_PATH"
+        run: yes | bash bootstrap.sh
 
       - name: Allow unprivileged user namespaces (for Ubuntu 24.04)
         run: sudo sysctl kernel.apparmor_restrict_unprivileged_userns=0
