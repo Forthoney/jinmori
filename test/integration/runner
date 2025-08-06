@@ -10,7 +10,7 @@ if [ -z "$TRY" ]; then
 	exit 1
 fi
 
-for test in "$TESTS/success"; do
+for test in "$TESTS/success/*"; do
 	if ! "$TRY" -n "$test"; then
 		echo "$test" >&2
 		exit 1
