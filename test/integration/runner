@@ -4,6 +4,7 @@
 JINMORI_TOP="${JINMORI_TOP:-$(git rev-parse --show-toplevel --show-superproject-working-tree 2>/dev/null || echo "${0%/*}")}"
 JINMORI="$JINMORI_TOP/build/jinmori.dbg"
 TESTS="$JINMORI_TOP/test/integration"
+export JINMORI
 
 if [ -z "$TRY" ]; then
 	echo "Please set \$TRY to the path of your try script" >&2

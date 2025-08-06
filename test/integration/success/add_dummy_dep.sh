@@ -1,4 +1,4 @@
-jinmori new project
+$JINMORI new project
 cd project
-jinmori add github.com/Forthoney/dummy
-jinmori build
+$JINMORI add github.com/Forthoney/dummy
+$JINMORI build

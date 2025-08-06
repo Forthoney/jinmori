@@ -1,3 +1,3 @@
-jinmori new project
+$JINMORI new project
 cd project
-jinmori fetch
+$JINMORI fetch
