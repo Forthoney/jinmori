@@ -3,16 +3,47 @@ Jinmori is an opinionated Standard ML Package Manager.
 
 ## Dependencies
 Jinmori requires MLton to compile.
+It also requires [`medjool`](https://github.com/Forthoney/medjool),
+which can be automatically downloaded with the following instructions.
 
 ## Installation
-### I already have Jinmori
-You can simply run
+If you already have jinmori, clone this repo and simply run
 ```sh
 jinmori build --release
 ```
 
-### I do not have jinmori
-Run `bootstrap.sh`, which will manually install the necessary dependencies.
+If you do not have an existing jinmori binary, run the following to install the necessary dependencies
+```sh
+bash bootstrap.sh
+```
+
+## Walkthrough
+Create a new project with `jinmori new myproject`.
+This creates a new directory named `myproject` with some boilerplate/scaffolding inside.
+There are two files worth noting: `src/sources.mlb`, `src/myproject.mlb`.
+`sources.mlb` should hold the code that is meant to be imported by others as a library,
+while `myproject.mlb` contains code that is meant to be used only when building the executable.
+By default `myproject.mlb` automatically imports `src/Main.sml` which serves, by convention,
+as the entry point of the binary.
+
+Now, execute `jinmori build` inside `myproject`.
+This will create a `build` directory (which is ignored by git by default)
+and a `myproject.dbg` executable.
+Running `build/myproject.dbg` should output the classic "Hello, world!"
+
+To use an external library,
+run `jinmori add https://github.com/<owner>/<repo>`.
+This will automatically download the target repo and create a symbolic link to the repo's root at
+`deps/<repo>`
+To use the library, just add `../deps/<repo>/sources.mlb` to the appropriate `.mlb` file such as `src/sources.mlb`.
+
+## Available Packages
+### Jinmori-native packages
+
+### Jinmori-compatible forks
+These packages in their original form are not compatible with Jinmori,
+but have a fork which is compatible
+- [smlfmt](https://github.com/Forthoney/smlfmt)
 
 ## Planned features
 Jinmori currently only supports using the latest commit of a repo.
