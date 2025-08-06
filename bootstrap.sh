@@ -23,7 +23,7 @@ mlton -output "$dbg" -const 'Exn.keepHistory true' src/jinmori.mlb
 echo "Bootstrapped, debug mode jinmori binary saved at '$dbg'"
 
 release="build/jinmori"
-build/jinmori.dbg --release build
+build/jinmori.dbg build --release
 echo "Built release mode jinmori binary at '$release'"
 
 while true; do
