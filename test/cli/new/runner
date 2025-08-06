@@ -7,6 +7,7 @@ TESTS="$JINMORI_TOP/test/cli/new"
 PWD="$(pwd)"
 export PWD JINMORI_TOP JINMORI TESTS PWD
 
+# Instead of making a tempfile for each test, we reuse the same file and clear it in between
 EXPECTED=$(mktemp)
 ACTUAL=$(mktemp)
 SAVE=""
@@ -22,7 +23,7 @@ cleanup() {
 
 	if [ -n "$SAVE" ]; then
 		mv "$SAVE/.jinmori" "$HOME"
-		echo "Restored original jinmori installation" >&2
+		echo "Restored original jinmori installation"
 		rmdir "$SAVE"
 	fi
 }
@@ -34,15 +35,18 @@ if [ -z "$TRY" ]; then
 fi
 
 checkexpect() {
+	cmd="$1"
+	expected_exit_code="$2"
+
 	path_capture_group="\(.*\)"     # capture group 1 - any chars
 	action_capture_group="(\(.*\))" # capture group 2 - any chars surrounded by parens
 	reformat="(\2)\t\1"             # action followed by path separated with tab
 	pat="s/$path_capture_group $action_capture_group/$reformat/p"
 
-	yes no | "$TRY" "$CMD" >"$ACTUAL" 2>&1 # Don't actually commit when prompted
-	ACTUAL_EXIT_CODE="$?"
+	yes no | "$TRY" "$cmd" >"$ACTUAL" 2>&1 # Don't actually commit when prompted
+	actual_exit_code="$?"
 
-	if [ "$ACTUAL_EXIT_CODE" -ne "$EXPECTED_EXIT_CODE" ]; then
+	if [ "$actual_exit_code" -ne "$expected_exit_code" ]; then
 		cat "$ACTUAL" >&2
 		return 1
 	fi
@@ -61,10 +65,10 @@ get_nth_line() {
 }
 
 if [ -d "$HOME/.jinmori" ]; then
-	echo "Existing jinmori installation found at $HOME/.jinmori" >&2
+	echo "Existing jinmori installation found at $HOME/.jinmori"
 	SAVE=$(mktemp -d)
 	mv "$HOME/.jinmori" "$SAVE"
-	printf "Temporarily moving $HOME/.jinmori to $SAVE. We'll try to restore it at the end, but if something goes wrong, you can find it there\n\n" >&2
+	printf "Temporarily moving $HOME/.jinmori to $SAVE. We'll try to restore it at the end, but if something goes wrong, you can find it there\n\n"
 fi
 
 errs=0
@@ -72,15 +76,15 @@ for test in "$TESTS"/*.test; do
 	get_nth_line 1 "$test" >&2
 	printf "...\t" >&2
 
-	CMD=$(get_nth_line 2 "$test")
-	EXPECTED_EXIT_CODE=$(get_nth_line 3 "$test")
+	cmd=$(get_nth_line 2 "$test")
+	exit_code=$(get_nth_line 3 "$test")
 
 	tail -n +4 "$test" | envsubst | sort >"$EXPECTED"
 
-	if checkexpect; then
-		echo "Success" >&2
+	if checkexpect "$cmd" "$exit_code"; then
+		echo "Success"
 	else
-		echo "Fail" >&2
+		echo "Fail"
 		errs=$((errs + 1))
 	fi
 done

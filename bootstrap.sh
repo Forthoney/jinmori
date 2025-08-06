@@ -12,14 +12,14 @@ while true; do
 done
 
 jinmori_home="$HOME/.jinmori"
-mkdir "$jinmori_home" "$jinmori_home/pkg" "$jinmori_home/bin" deps
+mkdir "$jinmori_home" "$jinmori_home/pkg" "$jinmori_home/bin" deps build
 
 dest="$jinmori_home/pkg/medjool"
 git clone --branch v0.1.1 --depth 1 https://github.com/Forthoney/medjool.git "$dest"
 ln --symbolic "$dest" "deps/medjool"
 
-bin_dest="$jinmori_home/bin/jinmori"
-mlton -output "$bin_dest" src/main.mlb
+bin_dest="build/jinmori.dbg"
+mlton -output "$bin_dest" -const 'Exn.keepHistory true' src/jinmori.mlb
 echo "jinmori binary saved at '$bin_dest'"
 
 echo "Consider adding '$jinmori_home/bin' to your path. Otherwise, you can run jinmori by running"
