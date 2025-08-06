@@ -33,4 +33,4 @@ jobs:
         working-directory: ${{ env.HOME }}
 
       - name: Run tests
-        run: TRY="$HOME/try-0.2.0/try" test/cli/new/runner
+        run: TRY=~/try-0.2.0/try test/cli/new/runner
