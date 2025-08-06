@@ -19,7 +19,7 @@ git clone --branch v0.1.1 --depth 1 https://github.com/Forthoney/medjool.git "$d
 ln --symbolic "$dest" "deps/medjool"
 
 bin_dest="$jinmori_home/bin/jinmori"
-mlton -output "$bin_dest" src/main.mlb
+mlton -output "$bin_dest" src/jinmori.mlb
 echo "jinmori binary saved at '$bin_dest'"
 
 echo "Consider adding '$jinmori_home/bin' to your path. Otherwise, you can run jinmori by running"
