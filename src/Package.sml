@@ -84,6 +84,7 @@ struct
     in
       case (tag, reap lsRemote) of
         (SOME tag, Posix.Process.W_EXITED) => tag
+      | (NONE, Posix.Process.W_EXITED) => raise Tag {remote = remoteAddr, stderr = ""}
       | _ => raise Tag {remote = remoteAddr, stderr = stderr}
     end
 
