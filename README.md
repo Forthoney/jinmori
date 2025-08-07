@@ -18,21 +18,29 @@ bash bootstrap.sh
 ```
 
 ## Walkthrough
-Create a new project with `jinmori new myproject`.
+Create a new project with 
+```sh
+jinmori new myproject
+```
 This creates a new directory named `myproject` with some boilerplate/scaffolding inside.
-There are two files worth noting: `src/sources.mlb`, `src/myproject.mlb`.
+There are two files worth noting: **`src/sources.mlb`** and **`src/myproject.mlb`**.
 `sources.mlb` should hold the code that is meant to be imported by others as a library,
 while `myproject.mlb` contains code that is meant to be used only when building the executable.
 By default `myproject.mlb` automatically imports `src/Main.sml` which serves, by convention,
 as the entry point of the binary.
 
-Now, execute `jinmori build` inside `myproject`.
-This will create a `build` directory (which is ignored by git by default)
-and a `myproject.dbg` executable.
+Now, from anywhere within the `myproject` directory, execute 
+```sh
+jinmori build
+```
+This will create a `build/myproject.dbg` executable.
 Running `build/myproject.dbg` should output the classic "Hello, world!"
 
 To use an external library,
-run `jinmori add https://github.com/<owner>/<repo>`.
+run 
+```sh
+jinmori add https://github.com/<owner>/<repo>
+```
 This will automatically download the target repo and create a symbolic link to the repo's root at
 `deps/<repo>`
 To use the library, just add `../deps/<repo>/sources.mlb` to the appropriate `.mlb` file such as `src/sources.mlb`.
