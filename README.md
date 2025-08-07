@@ -39,6 +39,7 @@ To use the library, just add `../deps/<repo>/sources.mlb` to the appropriate `.m
 
 ## Available Packages
 ### Jinmori-native packages
+- [which](https://github.com/Forthoney/which)
 
 ### Jinmori-compatible forks
 These packages in their original form are not compatible with Jinmori,

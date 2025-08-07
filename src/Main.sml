@@ -17,6 +17,7 @@ val _ =
     handle
       Package.NotFound pkg =>
         err ("Package " ^ Package.toString pkg ^ " not found")
+    | Package.Tag {remote, stderr = ""} => err ("Failed to find any tags from remote \"" ^ remote ^ "\"")
     | Package.Tag {remote, stderr} =>
         err
           ("Failed to retrieve the latest tag from remote " ^ "\"" ^ remote
