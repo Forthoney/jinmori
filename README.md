@@ -61,6 +61,8 @@ Jinmori currently only supports using the latest commit of a repo.
 - [x] Install commands
 - [x] ~~Assign MLBasisPathMap variables~~ Handling dependencies through symlinks
 - [ ] Support multiple compilers
+- [ ] Verbosity control
+- [ ] Lockfile 
 
 ## Comparison
 ### Unique to Jinmori
@@ -78,6 +80,3 @@ Jinmori currently only supports using the latest commit of a repo.
 - Jinmori handles downloading of dependencies
 - Jinmori explicitly lists dependencies in `Jinmori.json`
 - Jinmori does not rely on SML path maps and instead uses symlinks
-
-- [ ] Verbosity control
-- [ ] Lockfile 
