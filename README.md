@@ -49,11 +49,13 @@ To use the library, just add `../deps/<repo>/sources.mlb` to the appropriate `.m
 ### Jinmori-native packages
 - [which](https://github.com/Forthoney/which)
 - [fold](https://github.com/Forthoney/fold)
+- [shorthand](https://github.com/Forthoney/shorthand)
 
 ### Jinmori-compatible forks
 These packages in their original form are not compatible with Jinmori,
 but have a fork which is compatible
 - [smlfmt](https://github.com/Forthoney/smlfmt)
+- [sml-uri](https://github.com/Forthoney/sml-uri)
 
 ## Planned features
 Jinmori currently only supports using the latest commit of a repo.
