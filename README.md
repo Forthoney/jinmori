@@ -40,6 +40,8 @@ To use an external library,
 run 
 ```sh
 jinmori add https://github.com/<owner>/<repo>
+# or if optionally specify the version
+jinmori add https://github.com/<owner>/<repo>@v1.2.3
 ```
 This will automatically download the target repo and create a symbolic link to the repo's root at
 `deps/<repo>`
@@ -56,6 +58,14 @@ These packages in their original form are not compatible with Jinmori,
 but have a fork which is compatible
 - [smlfmt](https://github.com/Forthoney/smlfmt)
 - [sml-uri](https://github.com/Forthoney/sml-uri)
+
+### Publishing your own forks
+A Jinmori package must contain a `Jinmori.json` at the root of the directory.
+If it is meant to also compile into a binary, it should also have a `src/<projectname>.mlb`
+which is what the compiler uses as the entry point to compilation.
+
+For others to be able to access your package to download via jinmori, 
+you **must** tag your package with a tag name that follows semantic versioning conventions - v0.1.0, v1.2.3, etc.
 
 ## Planned features
 Jinmori currently only supports using the latest commit of a repo.
