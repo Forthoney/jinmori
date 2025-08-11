@@ -23,7 +23,14 @@ struct
       ])
 
   fun mainMlb name path =
-    write (path / "src" / Filename.mainMlb name, Filename.sources ^ "\n" ^ Filename.main)
+    write (path / "src" / Filename.mainMlb name, String.concatWith "\n"
+      [ "local"
+      , "\t$(SML_LIB)/basis/basis.mlb"
+      , "\t" ^ Filename.sources
+      , "in"
+      , Filename.main
+      , "end"
+      ])
 
   fun test path =
     write (path / "test" / Filename.test, String.concatWith "\n"
