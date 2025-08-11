@@ -59,7 +59,7 @@ but have a fork which is compatible
 - [smlfmt](https://github.com/Forthoney/smlfmt)
 - [sml-uri](https://github.com/Forthoney/sml-uri)
 
-### Publishing your own forks
+### Publishing your own packages
 A Jinmori package must contain a `Jinmori.json` at the root of the directory.
 If it is meant to also compile into a binary, it should also have a `src/<projectname>.mlb`
 which is what the compiler uses as the entry point to compilation.
