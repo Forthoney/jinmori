@@ -1,5 +1,5 @@
 # Jinmori
-Jinmori is an opinionated Standard ML Package Manager.
+Jinmori is a one-stop Standard ML Package Manager capable of downloading and adding dependencies, installing binaries, and building projects. See [comparison against other SML package managers](#comparison)
 
 ## Dependencies
 Jinmori requires MLton to compile.
@@ -65,3 +65,20 @@ Jinmori currently only supports using the latest commit of a repo.
 - [ ] Support multiple compilers
 - [ ] Verbosity control
 - [ ] Lockfile 
+
+## Comparison
+### Unique to Jinmori
+- Jinmori handles building automatically without requiring the use of a `Makefile`
+- Jinmori only supports MLton (as of now)
+
+### [smlpkg](https://github.com/diku-dk/smlpkg)
+- Jinmori downloads packages once and reuses it via symlinks rather than redownloading packages on a per-project basis
+- Jinmori allows for flat project directories instead of `lib/github.com/<username>/<package>`
+- Jinmori provides a `build` command instead of relying on project-specific `Makefile`, and thus can install binaries as well
+- Jinmori only supports MLton (as of now)
+- Jinmori requires specifying the exact version whereas smlpkg assumes packages abide by semantic versioning and will update packages accordingly
+
+### [smackage](https://github.com/standardml/smackage)
+- Jinmori handles downloading of dependencies
+- Jinmori explicitly lists dependencies in `Jinmori.json`
+- Jinmori does not rely on SML path maps and instead uses symlinks
