@@ -39,7 +39,7 @@ Running `build/myproject.dbg` should output the classic "Hello, world!"
 To use an external library,
 run 
 ```sh
-jinmori add https://github.com/<owner>/<repo>
+jinmori add github.com/<owner>/<repo>
 ```
 This will automatically download the target repo and create a symbolic link to the repo's root at
 `deps/<repo>`
