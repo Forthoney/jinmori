@@ -16,7 +16,7 @@ mkdir "$jinmori_home" "$jinmori_home/pkg" "$jinmori_home/bin" deps build
 
 dest="$jinmori_home/pkg/medjool"
 git clone --branch v0.1.1 --depth 1 https://github.com/Forthoney/medjool.git "$dest"
-ln --symbolic "$dest" "deps/medjool"
+ln -s "$dest" "deps/medjool"
 
 dbg="build/jinmori.dbg"
 mlton -output "$dbg" -const 'Exn.keepHistory true' src/jinmori.mlb
