@@ -6,13 +6,17 @@ struct
        type action = Package.t list
        val desc = "Build and install a Jinmori binary"
        val flags = [Shared.verbosity []]
-       val anonymous =
-        Argument.Any {action = map (Option.valOf o Package.fromString), metavar = "PKG"})
+       val anonymous = Argument.Any
+         { action = map
+             (Argument.asType'
+                {typeName = "Package.t", fromString = Package.fromString})
+         , metavar = "PKG"
+         })
 
   structure MLton = CompileFn(Compiler.MLton)
 
   structure FS = OS.FileSys
-  
+
   fun run args =
     let
       val _ = Command.run args
@@ -26,8 +30,12 @@ struct
           val entryPoint = projectDir / "src" / (name ^ ".mlb")
           val buildDir = Path.home () / "bin"
           val _ =
-            if FS.access (buildDir, []) then Logger.debug "found build directory"
-            else (Logger.debug "did not find build directory, creating one"; FS.mkDir buildDir)
+            if FS.access (buildDir, []) then
+              Logger.debug "found build directory"
+            else
+              ( Logger.debug "did not find build directory, creating one"
+              ; FS.mkDir buildDir
+              )
           val _ = Logger.debug "beginning compilation... this may take a while"
         in
           MLton.compile

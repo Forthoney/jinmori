@@ -11,13 +11,15 @@ val _ =
      | "build" :: args => Build.run args
      | "fetch" :: args => Fetch.run args
      | "install" :: args => Install.run args
-     | "--help" :: args => print "Available subcommands: add, new, build, fetch, install\n"
+     | "--help" :: args =>
+         print "Available subcommands: add, new, build, fetch, install\n"
      | [] => print "Available subcommands: add, new, build, fetch, install\n"
      | unknown :: args => err ("Unknown subcommand: " ^ unknown ^ "\n"))
     handle
       Package.NotFound pkg =>
         err ("Package " ^ Package.toString pkg ^ " not found")
-    | Package.Tag {remote, stderr = ""} => err ("Failed to find any tags from remote \"" ^ remote ^ "\"")
+    | Package.Tag {remote, stderr = ""} =>
+        err ("Failed to find any tags from remote \"" ^ remote ^ "\"")
     | Package.Tag {remote, stderr} =>
         err
           ("Failed to retrieve the latest tag from remote " ^ "\"" ^ remote

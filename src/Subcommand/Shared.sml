@@ -12,21 +12,20 @@ struct
          | "fatal" => Level.FATAL
          | _ => raise Fail "unreachable"
     in
-      { usage =
-        { name = "verbose"
-        , desc = "Set verbosity level"
-        }
-      , arg = Argument.One {
-          action = fn s =>
-            let
-              val s = Argument.includedIn ["debug", "info", "warn", "error", "fatal"] s
-              val level = convert s
-              val _ = Logger.level := level
-            in
-              ret
-            end,
-          metavar = "LEVEL"
-        }
+      { usage = {name = "verbose", desc = "Set verbosity level"}
+      , arg = Argument.One
+          { action = fn s =>
+              let
+                val s =
+                  Argument.includedIn
+                    ["debug", "info", "warn", "error", "fatal"] s
+                val level = convert s
+                val _ = Logger.level := level
+              in
+                ret
+              end
+          , metavar = "LEVEL"
+          }
       }
     end
 end

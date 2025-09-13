@@ -25,8 +25,12 @@ struct
        type action = Package.t list
        val desc = "Add dependencies to a project"
        val flags = [Shared.verbosity []]
-       val anonymous =
-         Argument.Any {action = map (Option.valOf o Package.fromString), metavar = "PKG"})
+       val anonymous = Argument.Any
+         { action = map
+             (Argument.asType'
+                {typeName = "Package.t", fromString = Package.fromString})
+         , metavar = "PKG"
+         })
 
   fun run args =
     let

@@ -47,8 +47,7 @@ struct
     , arg = Argument.One
         { action = fn s =>
             pkgName
-            :=
-            Argument.satisfies "Expected valid SML structure name" validate s
+            := Argument.satisfies "Expected valid SML structure name" validate s
         , metavar = "NAME"
         }
     }
