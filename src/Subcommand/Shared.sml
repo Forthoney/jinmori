@@ -1,3 +1,5 @@
+val _ = Logger.level := Level.FATAL
+
 structure Shared =
 struct
   val verbosity =
