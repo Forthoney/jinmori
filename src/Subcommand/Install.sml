@@ -16,7 +16,7 @@ struct
   fun run args =
     let
       val _ = Command.run args
-      val [[], pkgs] = Command.run args
+      val pkgs = (List.hd o Command.run) args
       fun install pkgPath =
         let
           val _ = Logger.info "installing package"
@@ -28,6 +28,7 @@ struct
           val _ =
             if FS.access (buildDir, []) then Logger.debug "found build directory"
             else (Logger.debug "did not find build directory, creating one"; FS.mkDir buildDir)
+          val _ = Logger.debug "beginning compilation... this may take a while"
         in
           MLton.compile
             { entryPoint = entryPoint

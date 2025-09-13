@@ -30,7 +30,7 @@ struct
 
   fun run args =
     let
-      val [[], pkgs] = Command.run args
+      val pkgs = (List.hd o Command.run) args
       val projDir = Path.projectRoot (OS.FileSys.getDir ())
       val _ = List.app (Package.addToDeps o Package.fetch) pkgs
     in

@@ -80,13 +80,31 @@ struct
 
       fun getSelection () =
         let
-          val _ =
-            print ("Available versions: " ^ String.concatWith ", " tags ^ "\n" ^ "Select tag: ")
-          val response = Option.valOf (TextIO.inputLine TextIO.stdIn)
+          val _ = print
+            ("Available versions:\n" ^ String.concatWith "\n" tags ^ "\n"
+             ^ "Select tag: ")
         in
-          case List.find (fn t => t = response) tags of
-            SOME t => t
-          | NONE => (print "Invalid tag. Please select amongst available options.\n"; getSelection ()) 
+          case TextIO.inputLine TextIO.stdIn of
+            NONE =>
+              ( Logger.info "No tag selected. Aborting"
+              ; OS.Process.exit OS.Process.success
+              ; ""
+              )
+          | SOME response =>
+              let
+                val tag =
+                  (Substring.string o trimr (String.size "\n") o Substring.full)
+                    response
+                val _ = Logger.debug ("selected tag: " ^ String.toString tag)
+              in
+                case List.find (fn t => t = tag) tags of
+                  SOME t => t
+                | NONE =>
+                    ( print
+                        "Invalid tag. Please select amongst available options.\n"
+                    ; getSelection ()
+                    )
+              end
         end
 
       val stderr =
@@ -102,11 +120,7 @@ struct
     in
       case (tags, reap lsRemote) of
         ([], Posix.Process.W_EXITED) => raise Fail "No tags found"
-      | (tags, Posix.Process.W_EXITED) => 
-        let val tag = getSelection ()
-        in
-          (Logger.info ("found tag " ^ tag); tag)
-        end
+      | (tags, Posix.Process.W_EXITED) => getSelection ()
       | _ => raise Tag {remote = remoteAddr, stderr = stderr}
     end
 
@@ -152,7 +166,8 @@ struct
                   Manifest.read (dest / Path.manifest)
                   handle IO.Io {cause = OS.SysErr _, ...} =>
                     (remove dest; raise Fail "Not a jinmori package")
-                val _ = Logger.debug ("found dependencies " ^ String.concatWith "," dependencies)
+                val _ = Logger.debug
+                  ("found dependencies " ^ String.concatWith "," dependencies)
               in
                 List.app (ignore o fetch o fromString) dependencies
               end
@@ -164,11 +179,13 @@ struct
           SOME v => v
         | NONE => selectTag git remoteAddr
       val dest = OS.Path.concat (Path.home () / "pkg", source ^ "@" ^ tag)
-      val _ = 
+      val _ =
         if FS.access (dest, []) then
-          Logger.info ("repo found locally at " ^ dest)
+          Logger.debug ("repo found locally at " ^ dest)
         else
-          (Logger.info ("repo not found locally at " ^ dest); download (git, tag, dest))
+          ( Logger.debug ("repo not found locally at " ^ dest)
+          ; download (git, tag, dest)
+          )
     in
       dest
     end

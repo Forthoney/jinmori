@@ -10,7 +10,8 @@ struct
     val main = "Main" ext "sml"
     fun mainMlb name = name ext "mlb"
     val test = "Test" ext "sml"
-    fun testMlb name = (name ^ ".test") ext "mlb"
+    fun testMlb name =
+      (name ^ ".test") ext "mlb"
     val sources = "sources" ext "mlb"
   end
 
@@ -41,17 +42,18 @@ struct
       ])
 
   fun testMlb name path =
-    write (path / "test" / Filename.testMlb name, "../src" / Filename.sources ^ "\n" ^ Filename.test)
+    write
+      ( path / "test" / Filename.testMlb name
+      , "../src" / Filename.sources ^ "\n" ^ Filename.test
+      )
 
   fun sources path =
     write (path / "src" / Filename.sources, String.concatWith "\n"
-      [ "local"
-      , "\t$(SML_LIB)/basis/basis.mlb"
-      , "in"
-      , "end"
-      ])
+      ["local", "\t$(SML_LIB)/basis/basis.mlb", "in", "end"])
 
-  fun gitignore path = write (path / ".gitignore", "deps/\nbuild/")
+  fun gitignore path =
+    write (path / ".gitignore", "deps/\nbuild/")
 
-  fun manifest name path = Manifest.write (path / Path.manifest, Manifest.default name)
+  fun manifest name path =
+    Manifest.write (path / Path.manifest, Manifest.default name)
 end
