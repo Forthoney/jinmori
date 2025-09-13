@@ -34,7 +34,6 @@ struct
           map extractTag (loop ())
         end
 
-
       fun getSelection () =
         let
           val _ = print
@@ -83,13 +82,15 @@ struct
 
   fun normalizeRemote remote =
     let
-      val remote =
-        if String.isPrefix "https://" remote then remote
-        else "https://" ^ remote
-      val remote =
-        if String.isSuffix ".git" remote then remote else remote ^ ".git"
+      val l =
+        if String.isPrefix "https://" remote then String.size "https://" else 0
+      val r =
+        if String.isSuffix "@" remote then String.size remote - String.size "@"
+        else String.size remote
+      val r =
+        if String.isSuffix ".git" remote then r - String.size ".git" else r
     in
-      remote
+      String.substring (remote, l, r - l)
     end
 
   fun fromStringInteractive s =
@@ -101,7 +102,6 @@ struct
         (_, "") => NONE
       | ("", source) =>
           let
-            (* empty source means that the whole string is actually source*)
             val source = normalizeRemote source
             val tag = selectTag (Path.which "git") source
           in
@@ -114,14 +114,15 @@ struct
     let
       open Substring
       val (l, r) = splitr (fn c => c <> #"@") (full s)
-
     in
       case (string l, string r) of
-        (_, "") => NONE
+        ("", _) => NONE
       | (source, tag) => SOME {source = normalizeRemote source, version = tag}
     end
 
   fun toString {source, version} = source ^ "@" ^ version
+
+  fun toURL ({source, ...}: t) = "https://" ^ source ^ ".git"
 
   fun remove dest =
     let
@@ -168,16 +169,15 @@ struct
 
   fun fetch (pkg as {source, version}) =
     let
-      val _ = Logger.info "fetching package"
-      val remoteAddr = "https://" ^ source ^ ".git"
+      val _ = Logger.info ("fetching package " ^ toString pkg)
       fun download (git, tag, dest) =
         let
           open MLton.Process
-          val _ = Logger.info ("git cloning repo at " ^ remoteAddr)
+          val url = toURL pkg
+          val _ = Logger.info ("git cloning repo at " ^ url)
           val gitClone = create
             { path = git
-            , args =
-                ["clone", "--branch", tag, "--depth", "1", remoteAddr, dest]
+            , args = ["clone", "--branch", tag, "--depth", "1", url, dest]
             , env = NONE
             , stderr = Param.null
             , stdin = Param.null
@@ -194,7 +194,8 @@ struct
                 val _ = Logger.debug
                   ("found dependencies " ^ String.concatWith "," dependencies)
               in
-                List.app (ignore o fetch o Option.valOf o fromString) dependencies
+                List.app (ignore o fetch o Option.valOf o fromString)
+                  dependencies
               end
           | _ => raise NotFound pkg
         end
