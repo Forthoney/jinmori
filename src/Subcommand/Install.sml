@@ -7,7 +7,7 @@ struct
        val desc = "Build and install a Jinmori binary"
        val flags = [Shared.verbosity []]
        val anonymous =
-        Argument.Any {action = map Package.fromString, metavar = "PKG"})
+        Argument.Any {action = map (Option.valOf o Package.fromString), metavar = "PKG"})
 
   structure MLton = CompileFn(Compiler.MLton)
 

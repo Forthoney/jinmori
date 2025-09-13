@@ -15,6 +15,6 @@ struct
       val projectDir = Path.projectRoot (OS.FileSys.getDir ())
       val {dependencies, ...} = Manifest.read (projectDir / Path.manifest)
     in
-      app (Package.addToDeps o Package.fetch o Package.fromString) dependencies
+      app (Package.addToDeps o Package.fetch o Option.valOf o Package.fromString) dependencies
     end
 end

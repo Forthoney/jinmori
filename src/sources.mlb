@@ -9,6 +9,7 @@ in
 	Path.sml
 	Manifest.sml
 	Scaffold.sml
+	Package.sig
 	Package.sml
 
 	CompilerInfo.sig

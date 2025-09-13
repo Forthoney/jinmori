@@ -26,7 +26,7 @@ struct
        val desc = "Add dependencies to a project"
        val flags = [Shared.verbosity []]
        val anonymous =
-         Argument.Any {action = map Package.fromString, metavar = "PKG"})
+         Argument.Any {action = map (Option.valOf o Package.fromString), metavar = "PKG"})
 
   fun run args =
     let
