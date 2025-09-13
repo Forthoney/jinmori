@@ -1,9 +1,10 @@
 {
-    "package" : {
-        "name" : "jinmori",
-        "version" : "0.2.0"
-      },
-    "dependencies" : [
-        "github.com\/Forthoney\/medjool@v0.1.1"
-      ]
-  }
+  "package": {
+    "name": "jinmori",
+    "version": "0.2.0"
+  },
+  "dependencies": [
+    "github.com/Forthoney/timber@v0.1.2",
+    "github.com/Forthoney/medjool@v0.1.1"
+  ]
+}

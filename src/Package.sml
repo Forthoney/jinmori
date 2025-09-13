@@ -56,6 +56,7 @@ struct
     let
       open MLton.Process
       open Substring
+      val _ = Logger.info ("git ls-remote repo at " ^ remoteAddr)
       val lsRemote = create
         { path = gitCmd
         , args = ["ls-remote", "--tags", "--sort=version:refname", remoteAddr]
@@ -83,7 +84,8 @@ struct
         end
     in
       case (tag, reap lsRemote) of
-        (SOME tag, Posix.Process.W_EXITED) => tag
+        (SOME tag, Posix.Process.W_EXITED) =>
+        (Logger.info ("found tag " ^ tag); tag)
       | (NONE, Posix.Process.W_EXITED) => raise Tag {remote = remoteAddr, stderr = ""}
       | _ => raise Tag {remote = remoteAddr, stderr = stderr}
     end
@@ -107,10 +109,12 @@ struct
 
   fun fetch (pkg as {source, version}) =
     let
+      val _ = Logger.info "fetching package"
       val remoteAddr = "https://" ^ source ^ ".git"
       fun download (git, tag, dest) =
         let
           open MLton.Process
+          val _ = Logger.info ("git cloning repo at " ^ remoteAddr)
           val gitClone = create
             { path = git
             , args =
@@ -128,6 +132,7 @@ struct
                   Manifest.read (dest / Path.manifest)
                   handle IO.Io {cause = OS.SysErr _, ...} =>
                     (remove dest; raise Fail "Not a jinmori package")
+                val _ = Logger.debug ("found dependencies " ^ String.concatWith "," dependencies)
               in
                 List.app (ignore o fetch o fromString) dependencies
               end
@@ -139,7 +144,11 @@ struct
           SOME v => v
         | NONE => latestTag git remoteAddr
       val dest = OS.Path.concat (Path.home () / "pkg", source ^ "@" ^ tag)
-      val _ = if FS.access (dest, []) then () else download (git, tag, dest)
+      val _ = 
+        if FS.access (dest, []) then
+          Logger.info ("repo found locally at " ^ dest)
+        else
+          (Logger.info ("repo not found locally at " ^ dest); download (git, tag, dest))
     in
       dest
     end

@@ -5,7 +5,7 @@ struct
       (structure Parser = Parser_PrefixFn(val prefix = "--")
        type action = unit
        val desc = "Fetch dependencies for a Jinmori project"
-       val flags = []
+       val flags = [Shared.verbosity]
        val anonymous = Argument.None (fn () => ())
       )
 

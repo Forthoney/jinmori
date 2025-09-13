@@ -4,6 +4,7 @@ local
   PathInfix.sml
 in
   Subcommand/Subcommand.sig
+  Subcommand/Shared.sml
   Subcommand/Add.sml
   Subcommand/New.sml
   Subcommand/Install.sml

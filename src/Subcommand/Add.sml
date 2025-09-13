@@ -1,7 +1,8 @@
 structure Add: SUBCOMMAND =
 struct
-  fun updateConfig projDir pkgs =
+  fun updateManifest projDir pkgs =
     let
+      val _ = Logger.info "updating manifest file (if necessary)"
       val deps = map Package.toString pkgs
       val {package, dependencies} = Manifest.read (projDir / Path.manifest)
       fun add acc =
@@ -23,7 +24,7 @@ struct
       (structure Parser = Parser_PrefixFn(val prefix = "--")
        type action = Package.t list
        val desc = "Add dependencies to a project"
-       val flags = []
+       val flags = [Shared.verbosity]
        val anonymous =
          Argument.Any {action = map Package.fromString, metavar = "PKG"})
 
@@ -31,7 +32,8 @@ struct
     let
       val [pkgs] = Command.run args
       val projDir = Path.projectRoot (OS.FileSys.getDir ())
+      val _ = List.app (Package.addToDeps o Package.fetch) pkgs
     in
-      (List.app (Package.addToDeps o Package.fetch) pkgs; updateConfig projDir pkgs)
+      updateManifest projDir pkgs
     end
 end

@@ -5,6 +5,7 @@ local
 	PathInfix.sml
 in
 	../deps/medjool/src/sources.mlb
+	../deps/timber/src/sources.mlb
 	Path.sml
 	Manifest.sml
 	Scaffold.sml

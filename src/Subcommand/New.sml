@@ -57,7 +57,7 @@ struct
       (structure Parser = Parser_PrefixFn(val prefix = "--")
        type action = unit
        val desc = "Create a new SML project"
-       val flags = [lib, name]
+       val flags = [lib, name, verbosity]
        val anonymous = Argument.One
          { action = fn s =>
              case (!pkgName, (rev o #arcs o OS.Path.fromString) s) of
