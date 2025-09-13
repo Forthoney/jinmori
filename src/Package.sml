@@ -52,7 +52,7 @@ struct
       recursiveRm (openDir dest)
     end
 
-  fun latestTag gitCmd remoteAddr =
+  fun selectTag gitCmd remoteAddr =
     let
       open MLton.Process
       open Substring
@@ -65,13 +65,30 @@ struct
         , stdin = Param.null
         , stdout = Param.pipe
         }
-      val stdout = Child.textIn (getStdout lsRemote)
-      val extractTag =
-        string o trimr (String.size "\n") o triml (String.size "refs/tags/")
-        o taker (fn c => c <> #"\t") o full
-      val tag =
-        Option.compose (extractTag, TextIO.inputLine o Child.textIn o getStdout)
-          lsRemote
+      val tags =
+        let
+          fun loop () =
+            case (TextIO.inputLine o Child.textIn o getStdout) lsRemote of
+              SOME line => line :: (loop ())
+            | NONE => []
+          val extractTag =
+            string o trimr (String.size "\n") o triml (String.size "refs/tags/")
+            o taker (fn c => c <> #"\t") o full
+        in
+          map extractTag (loop ())
+        end
+
+      fun getSelection () =
+        let
+          val _ =
+            print ("Available versions: " ^ String.concatWith ", " tags ^ "\n" ^ "Select tag: ")
+          val response = Option.valOf (TextIO.inputLine TextIO.stdIn)
+        in
+          case List.find (fn t => t = response) tags of
+            SOME t => t
+          | NONE => (print "Invalid tag. Please select amongst available options.\n"; getSelection ()) 
+        end
+
       val stderr =
         let
           val strm = Child.textIn (getStderr lsRemote)
@@ -83,10 +100,13 @@ struct
           loop ()
         end
     in
-      case (tag, reap lsRemote) of
-        (SOME tag, Posix.Process.W_EXITED) =>
-        (Logger.info ("found tag " ^ tag); tag)
-      | (NONE, Posix.Process.W_EXITED) => raise Tag {remote = remoteAddr, stderr = ""}
+      case (tags, reap lsRemote) of
+        ([], Posix.Process.W_EXITED) => raise Fail "No tags found"
+      | (tags, Posix.Process.W_EXITED) => 
+        let val tag = getSelection ()
+        in
+          (Logger.info ("found tag " ^ tag); tag)
+        end
       | _ => raise Tag {remote = remoteAddr, stderr = stderr}
     end
 
@@ -142,7 +162,7 @@ struct
       val tag =
         case version of
           SOME v => v
-        | NONE => latestTag git remoteAddr
+        | NONE => selectTag git remoteAddr
       val dest = OS.Path.concat (Path.home () / "pkg", source ^ "@" ^ tag)
       val _ = 
         if FS.access (dest, []) then

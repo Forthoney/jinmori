@@ -2,7 +2,7 @@ val _ = Logger.level := Level.FATAL
 
 structure Shared =
 struct
-  val verbosity =
+  fun verbosity ret =
     let
       val convert =
         fn "debug" => Level.DEBUG
@@ -21,8 +21,9 @@ struct
             let
               val s = Argument.includedIn ["debug", "info", "warn", "error", "fatal"] s
               val level = convert s
+              val _ = Logger.level := level
             in
-              Logger.level := level
+              ret
             end,
           metavar = "LEVEL"
         }

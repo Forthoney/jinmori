@@ -5,7 +5,7 @@ struct
       (structure Parser = Parser_PrefixFn(val prefix = "--")
        type action = Package.t list
        val desc = "Build and install a Jinmori binary"
-       val flags = [Shared.verbosity]
+       val flags = [Shared.verbosity []]
        val anonymous =
         Argument.Any {action = map Package.fromString, metavar = "PKG"})
 
@@ -15,7 +15,8 @@ struct
   
   fun run args =
     let
-      val [pkgs] = Command.run args
+      val _ = Command.run args
+      val [[], pkgs] = Command.run args
       fun install pkgPath =
         let
           val _ = Logger.info "installing package"

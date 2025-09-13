@@ -27,7 +27,7 @@ struct
         (structure Parser = Parser_PrefixFn(val prefix = "--")
          type action = unit
          val desc = "Build a Jinmori executable"
-         val flags = [dbg, release, bin, Shared.verbosity]
+         val flags = [dbg, release, bin, Shared.verbosity ()]
          val anonymous = Argument.Any
            { action = fn flags => additionalOpts := flags
            , metavar = "COMPILER_FLAG"

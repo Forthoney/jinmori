@@ -24,13 +24,13 @@ struct
       (structure Parser = Parser_PrefixFn(val prefix = "--")
        type action = Package.t list
        val desc = "Add dependencies to a project"
-       val flags = [Shared.verbosity]
+       val flags = [Shared.verbosity []]
        val anonymous =
          Argument.Any {action = map Package.fromString, metavar = "PKG"})
 
   fun run args =
     let
-      val [pkgs] = Command.run args
+      val [[], pkgs] = Command.run args
       val projDir = Path.projectRoot (OS.FileSys.getDir ())
       val _ = List.app (Package.addToDeps o Package.fetch) pkgs
     in
