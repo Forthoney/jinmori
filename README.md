@@ -62,8 +62,8 @@ Jinmori currently only supports using the latest commit of a repo.
 - [x] Support version tags
 - [x] Install commands
 - [x] ~~Assign MLBasisPathMap variables~~ Handling dependencies through symlinks
-- [ ] Support multiple compilers
-- [ ] Verbosity control
+- [x] Support multiple compilers
+- [x] Verbosity control
 - [ ] Lockfile 
 
 ## Comparison
