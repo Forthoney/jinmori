@@ -15,11 +15,11 @@ jinmori_home="$HOME/.jinmori"
 mkdir "$jinmori_home" "$jinmori_home/pkg" "$jinmori_home/bin" deps build
 
 dest="$jinmori_home/pkg/medjool"
-git clone --branch v0.2.0 --depth 1 https://github.com/Forthoney/medjool.git "$dest"
+git clone --branch v0.2.2 --depth 1 https://github.com/Forthoney/medjool.git "$dest"
 ln -s "$dest" "deps/medjool"
 
 dest="$jinmori_home/pkg/timber"
-git clone --branch v0.1.2 --depth 1 https://github.com/Forthoney/timber.git "$dest"
+git clone --branch v0.1.3 --depth 1 https://github.com/Forthoney/timber.git "$dest"
 ln -s "$dest" "deps/timber"
 
 
