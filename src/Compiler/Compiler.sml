@@ -40,8 +40,7 @@ struct
         val shared = additional @ [entryPoint]
       in
         if debug then
-          ["-output", output ^ ".dbg", "-const", "Exn.keepHistory true"]
-          @ shared
+          ["-output", output ^ ".dbg"] @ shared
         else
           ["-output", output] @ shared
       end
