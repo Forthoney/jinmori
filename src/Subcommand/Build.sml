@@ -4,6 +4,7 @@ struct
   val additionalOpts = ref []
   val binary = ref ""
   val compiler = ref NONE
+  val compilerPath = ref NONE
 
   local
     val dbg =
@@ -34,13 +35,17 @@ struct
           , metavar = "SMLC"
           }
       }
+    val compilerPath =
+      { usage = {name = "compiler-path", desc = "Manually set the path to the compiler"}
+      , arg = Argument.One { action = fn s => compilerPath := SOME s, metavar = "SMLC_PATH" }
+      }
   in
     structure Command =
       CommandFn
         (structure Parser = Parser_PrefixFn(val prefix = "--")
          type action = unit
          val desc = "Build a Jinmori executable"
-         val flags = [dbg, release, bin, compiler, Shared.verbosity ()]
+         val flags = [dbg, release, bin, compiler, compilerPath, Shared.verbosity ()]
          val anonymous = Argument.Any
            { action = fn flags => additionalOpts := flags
            , metavar = "COMPILER_FLAG"
@@ -74,6 +79,7 @@ struct
       val _ = if FS.access (buildDir, []) then () else FS.mkDir buildDir
     in
       Compiler.compileWith selectedCompiler
+        (! compilerPath)
         { entryPoint = entryPoint
         , output = buildDir / name
         , additional = !additionalOpts

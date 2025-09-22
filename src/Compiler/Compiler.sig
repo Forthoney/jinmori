@@ -6,5 +6,5 @@ sig
   val toString: t -> string
   val fromString: string -> t option
 
-  val compileWith: t -> build_info -> unit
+  val compileWith: t -> string option -> build_info -> unit
 end

@@ -39,7 +39,7 @@ struct
               )
           val _ = Logger.debug "beginning compilation... this may take a while"
         in
-          Compiler.compileWith preferred
+          Compiler.compileWith preferred NONE
             { entryPoint = entryPoint
             , output = buildDir / name
             , additional = []
