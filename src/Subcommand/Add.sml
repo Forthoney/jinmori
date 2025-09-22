@@ -4,7 +4,8 @@ struct
     let
       val _ = Logger.info "updating manifest file (if necessary)"
       val deps = map Package.toString pkgs
-      val {package, dependencies} = Manifest.read (projDir / Path.manifest)
+      val {package, dependencies, supportedCompilers} =
+        Manifest.read (projDir / Path.manifest)
       fun add acc =
         fn [] => acc
          | (dep :: rest) =>
@@ -15,7 +16,10 @@ struct
     in
       Manifest.write
         ( projDir / Path.manifest
-        , {package = package, dependencies = dependencies}
+        , { package = package
+          , dependencies = dependencies
+          , supportedCompilers = supportedCompilers
+          }
         )
     end
 

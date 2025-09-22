@@ -187,7 +187,7 @@ struct
           case reap gitClone of
             Posix.Process.W_EXITED =>
               let
-                val {package, dependencies} =
+                val {package, dependencies, ...} =
                   Manifest.read (dest / Path.manifest)
                   handle IO.Io {cause = OS.SysErr _, ...} =>
                     (remove dest; raise Fail "Not a jinmori package")

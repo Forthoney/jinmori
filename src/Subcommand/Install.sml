@@ -13,8 +13,6 @@ struct
          , metavar = "PKG"
          })
 
-  structure MLton = CompileFn(Compiler.MLton)
-
   structure FS = OS.FileSys
 
   fun run args =
@@ -25,8 +23,11 @@ struct
         let
           val _ = Logger.info "installing package"
           val projectDir = Path.projectRoot pkgPath
-          val {package = {name, ...}, dependencies} =
-            Manifest.read (projectDir / Path.manifest)
+          val
+            { package = {name, ...}
+            , dependencies
+            , supportedCompilers = preferred :: _
+            } = Manifest.read (projectDir / Path.manifest)
           val entryPoint = projectDir / "src" / (name ^ ".mlb")
           val buildDir = Path.home () / "bin"
           val _ =
@@ -38,7 +39,7 @@ struct
               )
           val _ = Logger.debug "beginning compilation... this may take a while"
         in
-          MLton.compile
+          Compiler.compileWith preferred
             { entryPoint = entryPoint
             , output = buildDir / name
             , additional = []

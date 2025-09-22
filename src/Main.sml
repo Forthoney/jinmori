@@ -16,7 +16,9 @@ val _ =
      | [] => print "Available subcommands: add, new, build, fetch, install\n"
      | unknown :: args => err ("Unknown subcommand: " ^ unknown ^ "\n"))
     handle
-      Package.NotFound pkg =>
+      Manifest.MissingField f =>
+        err ("Jinmori.json file is missing the required field '" ^ f ^ "'")
+    | Package.NotFound pkg =>
         err ("Package " ^ Package.toString pkg ^ " not found")
     | Package.Tag {remote, stderr = ""} =>
         err ("Failed to find any tags from remote \"" ^ remote ^ "\"")

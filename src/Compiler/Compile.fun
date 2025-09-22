@@ -1,4 +1,4 @@
-functor CompileFn(C: COMPILER_INFO) =
+functor CompileFn(C: COMPILER_STRUCT) =
 struct
   fun compile opts =
     let
@@ -23,7 +23,7 @@ struct
         end
     in
       case reap child of
-        Posix.Process.W_EXITED => ()
-      | _ => raise Compiler.Compile stderr
+        Posix.Process.W_EXITED => (TextIO.output (TextIO.stdErr, stderr); TextIO.flushOut TextIO.stdErr)
+      | _ => raise Compile stderr
     end
 end

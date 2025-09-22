@@ -2,17 +2,16 @@ local
 	$(SML_LIB)/basis/basis.mlb
 	$(SML_LIB)/basis/mlton.mlb
 	$(SML_LIB)/smlnj-lib/JSON/json-lib.mlb
-	PathInfix.sml
 in
 	../deps/medjool/src/sources.mlb
 	../deps/timber/src/sources.mlb
+
 	Path.sml
+	Compiler/sources.mlb
+	Manifest.sig
 	Manifest.sml
+
 	Scaffold.sml
 	Package.sig
 	Package.sml
-
-	CompilerInfo.sig
-	CompilerInfo.sml
-	Compile.fun
 end

@@ -1,7 +1,6 @@
 local
   $(SML_LIB)/basis/basis.mlb
   sources.mlb
-  PathInfix.sml
 in
   Subcommand/Subcommand.sig
   Subcommand/Shared.sml
