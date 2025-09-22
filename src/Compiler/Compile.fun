@@ -1,10 +1,14 @@
-functor CompileFn(C: COMPILER_INFO) =
+functor CompileFn(C: COMPILER_STRUCT) =
 struct
-  fun compile opts =
+  fun compile path opts =
     let
+      val path =
+        case path of
+          SOME p => p
+        | NONE => Path.which C.name
       open MLton.Process
       val child = create
-        { path = Path.which C.name
+        { path = path
         , args = C.options opts
         , env = NONE
         , stderr = Param.pipe
@@ -23,7 +27,7 @@ struct
         end
     in
       case reap child of
-        Posix.Process.W_EXITED => ()
-      | _ => raise Compiler.Compile stderr
+        Posix.Process.W_EXITED => (TextIO.output (TextIO.stdErr, stderr); TextIO.flushOut TextIO.stdErr)
+      | _ => raise Compile stderr
     end
 end

@@ -47,8 +47,7 @@ struct
     , arg = Argument.One
         { action = fn s =>
             pkgName
-            :=
-            Argument.satisfies "Expected valid SML structure name" validate s
+            := Argument.satisfies "Expected valid SML structure name" validate s
         , metavar = "NAME"
         }
     }
@@ -57,7 +56,7 @@ struct
       (structure Parser = Parser_PrefixFn(val prefix = "--")
        type action = unit
        val desc = "Create a new SML project"
-       val flags = [lib, name]
+       val flags = [lib, name, Shared.verbosity ()]
        val anonymous = Argument.One
          { action = fn s =>
              case (!pkgName, (rev o #arcs o OS.Path.fromString) s) of

@@ -5,34 +5,47 @@ struct
       (structure Parser = Parser_PrefixFn(val prefix = "--")
        type action = Package.t list
        val desc = "Build and install a Jinmori binary"
-       val flags = []
-       val anonymous =
-        Argument.Any {action = map Package.fromString, metavar = "PKG"})
-
-  structure MLton = CompileFn(Compiler.MLton)
+       val flags = [Shared.verbosity []]
+       val anonymous = Argument.Any
+         { action = map
+             (Argument.asType'
+                {typeName = "Package.t", fromString = Package.fromString})
+         , metavar = "PKG"
+         })
 
   structure FS = OS.FileSys
-  
+
   fun run args =
     let
-      val [pkgs] = Command.run args
+      val _ = Command.run args
+      val pkgs = (List.hd o Command.run) args
       fun install pkgPath =
         let
+          val _ = Logger.info "installing package"
           val projectDir = Path.projectRoot pkgPath
-          val {package = {name, ...}, dependencies} =
-            Manifest.read (projectDir / Path.manifest)
+          val
+            { package = {name, ...}
+            , dependencies
+            , supportedCompilers = preferred :: _
+            } = Manifest.read (projectDir / Path.manifest)
           val entryPoint = projectDir / "src" / (name ^ ".mlb")
           val buildDir = Path.home () / "bin"
-          val _ = if FS.access (buildDir, []) then () else FS.mkDir buildDir
+          val _ =
+            if FS.access (buildDir, []) then
+              Logger.debug "found build directory"
+            else
+              ( Logger.debug "did not find build directory, creating one"
+              ; FS.mkDir buildDir
+              )
+          val _ = Logger.debug "beginning compilation... this may take a while"
         in
-          MLton.compile
+          Compiler.compileWith preferred NONE
             { entryPoint = entryPoint
             , output = buildDir / name
             , additional = []
             , debug = false
             }
         end
-
     in
       List.app (install o Package.fetch) pkgs
     end

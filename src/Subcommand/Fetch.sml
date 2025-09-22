@@ -5,9 +5,8 @@ struct
       (structure Parser = Parser_PrefixFn(val prefix = "--")
        type action = unit
        val desc = "Fetch dependencies for a Jinmori project"
-       val flags = []
-       val anonymous = Argument.None (fn () => ())
-      )
+       val flags = [Shared.verbosity ()]
+       val anonymous = Argument.None (fn () => ()))
 
   fun run args =
     let
@@ -15,6 +14,8 @@ struct
       val projectDir = Path.projectRoot (OS.FileSys.getDir ())
       val {dependencies, ...} = Manifest.read (projectDir / Path.manifest)
     in
-      app (Package.addToDeps o Package.fetch o Package.fromString) dependencies
+      app
+        (Package.addToDeps o Package.fetch o Option.valOf o Package.fromString)
+        dependencies
     end
 end

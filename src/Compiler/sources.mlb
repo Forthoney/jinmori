@@ -1,0 +1,14 @@
+local
+	$(SML_LIB)/basis/basis.mlb
+	$(SML_LIB)/basis/mlton.mlb
+	Prelude.sml
+	../Path.sml
+in
+	Compiler.sig
+	local
+		CompilerStruct.sig
+		Compile.fun
+	in
+		Compiler.sml
+	end
+end

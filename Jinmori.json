@@ -1,9 +1,13 @@
 {
     "package" : {
         "name" : "jinmori",
-        "version" : "0.2.0"
+        "version" : "0.3.0"
       },
+    "supportedCompilers" : [
+        "mlton"
+      ],
     "dependencies" : [
-        "github.com\/Forthoney\/medjool@v0.1.1"
+        "github.com/Forthoney/medjool@v0.2.2",
+        "github.com/Forthoney/timber@v0.1.3"
       ]
   }

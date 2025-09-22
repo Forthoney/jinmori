@@ -1,24 +1,26 @@
-structure Manifest:
-sig
-  type t
-  val default: string -> t
-  val toJSON: t -> JSON.value
-  val read: string -> t
-  val write: string * t -> unit
-end =
+structure Manifest: MANIFEST =
 struct
   exception MissingField of string
-
-  type t = {package: {name: string, version: string}, dependencies: string list}
+  type t =
+    { package: {name: string, version: string}
+    , supportedCompilers: Compiler.t list
+    , dependencies: string list
+    }
 
   fun default name =
-    {package = {name = name, version = "0.1.0"}, dependencies = []}
+    { package = {name = name, version = "0.1.0"}
+    , supportedCompilers = [Compiler.MLTON]
+    , dependencies = []
+    }
 
-  fun toJSON {package = {name, version}, dependencies} =
+  fun toJSON {package = {name, version}, supportedCompilers, dependencies} =
     JSON.OBJECT
       [ ( "package"
         , JSON.OBJECT
             [("name", JSON.STRING name), ("version", JSON.STRING version)]
+        )
+      , ( "supportedCompilers"
+        , JSON.ARRAY (map (JSON.STRING o Compiler.toString) supportedCompilers)
         )
       , ("dependencies", JSON.ARRAY (map JSON.STRING dependencies))
       ]
@@ -37,6 +39,18 @@ struct
          | _ => raise MissingField "name")
     | _ => raise MissingField "package"
 
+  fun supportedCompilers src =
+    let
+      fun toCompiler c = 
+        case Compiler.fromString c of
+          SOME c => c
+        | NONE => raise Fail ("unknown compiler name " ^ c)
+    in
+      case findKey "supportedCompilers" src of
+        SOME (cs as JSON.ARRAY _) => JSONUtil.arrayMap (toCompiler o JSONUtil.asString) cs
+      | NONE => raise MissingField "supportedCompilers"
+    end
+
   fun dependencies src =
     case findKey "dependencies" src of
       SOME (deps as JSON.ARRAY _) => JSONUtil.arrayMap JSONUtil.asString deps
@@ -45,7 +59,10 @@ struct
   fun read path =
     case JSONParser.parseFile path of
       JSON.OBJECT src =>
-        {package = package src, dependencies = dependencies src}
+        { package = package src
+        , dependencies = dependencies src
+        , supportedCompilers = supportedCompilers src
+        }
     | _ => raise MissingField ""
 
   fun write (path, metadata) =
