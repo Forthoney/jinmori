@@ -40,7 +40,7 @@ struct
     let
       val pkgs = (List.hd o Command.run) args
       val projDir = Path.projectRoot (OS.FileSys.getDir ())
-      val _ = List.app (Package.addToDeps o Package.fetch) pkgs
+      val _ = List.app (Package.addToDeps projDir o Package.fetch) pkgs
     in
       updateManifest projDir pkgs
     end

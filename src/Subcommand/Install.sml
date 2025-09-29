@@ -9,7 +9,7 @@ struct
        val anonymous = Argument.Any
          { action = map
              (Argument.asType'
-                {typeName = "Package.t", fromString = Package.fromString})
+                {typeName = "Package.t", fromString = Package.fromStringInteractive})
          , metavar = "PKG"
          })
 
@@ -28,6 +28,7 @@ struct
             , dependencies
             , supportedCompilers = preferred :: _
             } = Manifest.read (projectDir / Path.manifest)
+          val _ = List.app (Package.addToDeps projectDir o Package.fetch o Option.valOf o Package.fromString) dependencies
           val entryPoint = projectDir / "src" / (name ^ ".mlb")
           val buildDir = Path.home () / "bin"
           val _ =
