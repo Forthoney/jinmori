@@ -9,5 +9,6 @@ in
   Subcommand/Install.sml
   Subcommand/Fetch.sml
   Subcommand/Build.sml
+  Subcommand/Sync.sml
   Main.sml
 end

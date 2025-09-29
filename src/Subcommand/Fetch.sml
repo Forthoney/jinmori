@@ -15,7 +15,7 @@ struct
       val {dependencies, ...} = Manifest.read (projectDir / Path.manifest)
     in
       app
-        (Package.addToDeps o Package.fetch o Option.valOf o Package.fromString)
+        (Package.addToDeps projectDir o Package.fetch o Option.valOf o Package.fromString)
         dependencies
     end
 end

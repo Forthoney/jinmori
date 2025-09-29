@@ -48,7 +48,7 @@ struct
     in
       case findKey "supportedCompilers" src of
         SOME (cs as JSON.ARRAY _) => JSONUtil.arrayMap (toCompiler o JSONUtil.asString) cs
-      | NONE => raise MissingField "supportedCompilers"
+      | _ => raise MissingField "supportedCompilers"
     end
 
   fun dependencies src =

@@ -1,6 +1,11 @@
 structure Package: PACKAGE =
 struct
-  type t = {source: string, version: string}
+  datatype source = S of string
+  datatype remote = R of string
+  
+  type t = {source: source, version: string}
+  (* the path of the installed package *)
+  type installed = string
 
   exception NotFound of t
   exception Tag of {remote: string, stderr: string}
@@ -8,7 +13,7 @@ struct
   structure FS = OS.FileSys
   structure PFS = Posix.FileSys
 
-  fun selectTag gitCmd remoteAddr =
+  fun selectTag gitCmd (R remoteAddr) =
     let
       open MLton.Process
       open Substring
@@ -37,7 +42,7 @@ struct
       fun getSelection () =
         let
           val _ = print
-            ("Available versions:\n" ^ String.concatWith "\n" tags ^ "\n"
+            ("Available versions at " ^ remoteAddr ^ ":\n" ^ String.concatWith "\n" tags ^ "\n"
              ^ "Select tag: ")
         in
           case TextIO.inputLine TextIO.stdIn of
@@ -80,18 +85,20 @@ struct
       | _ => raise Tag {remote = remoteAddr, stderr = stderr}
     end
 
-  fun normalizeRemote remote =
+  fun normalizeSource s =
     let
       val l =
-        if String.isPrefix "https://" remote then String.size "https://" else 0
+        if String.isPrefix "https://" s then String.size "https://" else 0
       val r =
-        if String.isSuffix "@" remote then String.size remote - String.size "@"
-        else String.size remote
+        if String.isSuffix "@" s then String.size s - String.size "@"
+        else String.size s
       val r =
-        if String.isSuffix ".git" remote then r - String.size ".git" else r
+        if String.isSuffix ".git" s then r - String.size ".git" else r
     in
-      String.substring (remote, l, r - l)
+      S (String.substring (s, l, r - l))
     end
+
+  fun toRemote (S s) = R ("https://" ^ s ^ ".git")
 
   fun fromStringInteractive s =
     let
@@ -102,12 +109,12 @@ struct
         (_, "") => NONE
       | ("", source) =>
           let
-            val source = normalizeRemote source
-            val tag = selectTag (Path.which "git") source
+            val source = normalizeSource source
+            val tag = selectTag (Path.which "git") (toRemote source)
           in
             SOME {source = source, version = tag}
           end
-      | (source, tag) => SOME {source = normalizeRemote source, version = tag}
+      | (source, tag) => SOME {source = normalizeSource source, version = tag}
     end
 
   fun fromString s =
@@ -117,12 +124,12 @@ struct
     in
       case (string l, string r) of
         ("", _) => NONE
-      | (source, tag) => SOME {source = normalizeRemote source, version = tag}
+      | (source, tag) => SOME {source = normalizeSource source, version = tag}
     end
 
-  fun toString {source, version} = source ^ "@" ^ version
+  fun toString {source = S s, version} = s ^ "@" ^ version
 
-  fun toURL ({source, ...}: t) = "https://" ^ source ^ ".git"
+  fun toURL ({source = S s, ...}: t) = "https://" ^ s ^ ".git"
 
   fun remove dest =
     let
@@ -139,35 +146,34 @@ struct
       recursiveRm (openDir dest)
     end
 
-  fun addToDeps dest =
+  fun addToDeps projDir target =
     let
-      val projDir = Path.projectRoot (FS.getDir ())
       val depsDir = projDir / "deps"
       val _ = if FS.access (depsDir, []) then () else FS.mkDir depsDir
-      val {package = {name, ...}, ...} = Manifest.read (dest / Path.manifest)
+      val {package = {name, ...}, ...} = Manifest.read (target / Path.manifest)
       val to = depsDir / name
-      val _ = Logger.debug ("symlinking " ^ dest ^ " to " ^ to)
+      val _ = Logger.debug ("symlinking " ^ target ^ " to " ^ to)
     in
-      PFS.symlink {old = dest, new = to}
+      PFS.symlink {old = target , new = to}
       handle OS.SysErr (msg, SOME e) =>
         if e = Posix.Error.exist then
           let
             val oldDest = PFS.readlink (depsDir / name)
           in
-            if oldDest = dest then
+            if oldDest = target then
               ()
             else
               ( Logger.debug
                   ("existing link found to " ^ oldDest ^ ". relinking")
               ; PFS.unlink to
-              ; PFS.symlink {old = dest, new = to}
+              ; PFS.symlink {old = target, new = to}
               )
           end
         else
-          raise Fail ("Failed to symlink " ^ dest ^ " with error: " ^ msg)
+          raise Fail ("Failed to symlink " ^ target ^ " with error: " ^ msg)
     end
 
-  fun fetch (pkg as {source, version}) =
+  fun fetch (pkg as {source = S source, version}) =
     let
       val _ = Logger.info ("fetching package " ^ toString pkg)
       fun download (git, tag, dest) =
