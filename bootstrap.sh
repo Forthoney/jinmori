@@ -19,7 +19,7 @@ git clone --branch v0.2.2 --depth 1 https://github.com/Forthoney/medjool.git "$d
 ln -s "$dest" "deps/medjool"
 
 dest="$jinmori_home/pkg/timber"
-git clone --branch v0.1.3 --depth 1 https://github.com/Forthoney/timber.git "$dest"
+git clone --branch v0.1.4 --depth 1 https://github.com/Forthoney/timber.git "$dest"
 ln -s "$dest" "deps/timber"
 
 
