@@ -32,7 +32,7 @@ struct
        val anonymous = Argument.Any
          { action = map
              (Argument.asType'
-                {typeName = "Package.t", fromString = Package.fromString})
+                {typeName = "Package.t", fromString = Package.fromStringInteractive})
          , metavar = "PKG"
          })
 
