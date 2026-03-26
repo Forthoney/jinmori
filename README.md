@@ -14,7 +14,8 @@ jinmori build --release
 
 If you do not have an existing jinmori binary, run the following to install the necessary dependencies
 ```sh
-bash bootstrap.sh
+mlton bootstrap.sml
+./bootstrap
 ```
 
 ## Walkthrough
