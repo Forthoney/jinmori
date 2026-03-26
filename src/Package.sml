@@ -87,15 +87,25 @@ struct
 
   fun normalizeSource s =
     let
-      val l =
-        if String.isPrefix "https://" s then String.size "https://" else 0
-      val r =
-        if String.isSuffix "@" s then String.size s - String.size "@"
-        else String.size s
-      val r =
-        if String.isSuffix ".git" s then r - String.size ".git" else r
+      fun |> (x, f) = f x
+      infix |>
+      open Substring
+      val s = Substring.full s
+      val s =
+        Option.filter (isPrefix "https://") s
+        |> Option.map (triml (String.size "https://"))
+        |> (fn s' => Option.getOpt (s', s))
+      val s =
+        Option.filter (isSuffix "@") s
+        |> Option.map (trimr (String.size "@"))
+        |> (fn s' => Option.getOpt (s', s))
+      val s =
+        Option.filter (isSuffix ".git") s
+        |> Option.map (trimr (String.size ".git"))
+        |> (fn s' => Option.getOpt (s', s))
+        |> string
     in
-      S (String.substring (s, l, r - l))
+      S s
     end
 
   fun toRemote (S s) = R ("https://" ^ s ^ ".git")
@@ -121,10 +131,23 @@ struct
     let
       open Substring
       val (l, r) = splitr (fn c => c <> #"@") (full s)
+      val source = string l
+      val tag = string r
     in
-      case (string l, string r) of
+      case (source, tag) of
         ("", _) => NONE
-      | (source, tag) => SOME {source = normalizeSource source, version = tag}
+      | (_, "") => NONE
+      | _ =>
+          if String.isSuffix "@" source then
+            let
+              val source =
+                String.substring (source, 0, String.size source - String.size "@")
+            in
+              if source = "" then NONE
+              else SOME {source = normalizeSource source, version = tag}
+            end
+          else
+            NONE
     end
 
   fun toString {source = S s, version} = s ^ "@" ^ version

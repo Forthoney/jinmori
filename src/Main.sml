@@ -9,12 +9,13 @@ val _ =
        "add" :: args => Add.run args
      | "new" :: args => New.run args
      | "build" :: args => Build.run args
+     | "test" :: args => Test.run args
      | "fetch" :: args => Fetch.run args
      | "install" :: args => Install.run args
      | "sync" :: args => Sync.run args
      | "--help" :: args =>
-         print "Available subcommands: add, new, build, fetch, install, sync\n"
-     | [] => print "Available subcommands: add, new, build, fetch, install, sync\n"
+       print "Available subcommands: add, new, build, test, fetch, install, sync\n"
+     | [] => print "Available subcommands: add, new, build, test, fetch, install, sync\n"
      | unknown :: args => err ("Unknown subcommand: " ^ unknown ^ "\n"))
     handle
       Manifest.MissingField f =>
