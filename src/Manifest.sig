@@ -3,6 +3,9 @@ sig
   exception MissingField of string
   type t =
     { package: {name: string, version: string}
+    , description: string
+    , license: string
+    , repository: string
     , supportedCompilers: Compiler.t list
     , dependencies: string list
     }

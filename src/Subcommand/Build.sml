@@ -58,7 +58,12 @@ struct
     let
       val _ = Command.run args
       val projectDir = Path.projectRoot (FS.getDir ())
-      val {package = {name, ...}, dependencies, supportedCompilers} =
+      val
+        { package = {name, ...}
+        , dependencies
+        , supportedCompilers
+        , ...
+        } =
         Manifest.read (projectDir / Path.manifest)
 
       val selectedCompiler =
