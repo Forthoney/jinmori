@@ -54,7 +54,7 @@ struct
             if List.exists (fn c' => c = c') supportedCompilers then c
             else raise Fail "unsupported compiler"
         | NONE => List.hd supportedCompilers
-      val entryPoint = projectDir / "test" / (name ^ ".tests.mlb")
+      val entryPoint = projectDir / "test" / (name ^ ".test.mlb")
       val buildDir = projectDir / "build"
       val output = buildDir / (name ^ "-tests")
       val executable = output ^ ".dbg"
