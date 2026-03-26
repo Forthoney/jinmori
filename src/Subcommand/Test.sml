@@ -54,10 +54,10 @@ struct
             if List.exists (fn c' => c = c') supportedCompilers then c
             else raise Fail "unsupported compiler"
         | NONE => List.hd supportedCompilers
-      val entryPoint = projectDir / "test" / (name ^ ".test.mlb")
+      val entryPoint = projectDir / "test" / ((name ext "test") ext "mlb")
       val buildDir = projectDir / "build"
       val output = buildDir / (name ^ "-tests")
-      val executable = output ^ ".dbg"
+      val executable = output ext "dbg"
       val _ =
         app
           (Package.addToDeps projectDir o Package.fetch o Option.valOf o Package.fromString)

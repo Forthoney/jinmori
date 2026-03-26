@@ -74,8 +74,8 @@ struct
         | NONE => List.hd supportedCompilers
       val entryPoint =
         case !binary of
-          "" => projectDir / "src" / (name ^ ".mlb")
-        | filename => projectDir / "src" / (filename ^ ".mlb")
+          "" => projectDir / "src" / (name ext "mlb")
+        | filename => projectDir / "src" / (filename ext "mlb")
       val buildDir = projectDir / "build"
       val _ =
         app

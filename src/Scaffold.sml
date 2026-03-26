@@ -11,7 +11,7 @@ struct
     fun mainMlb name = name ext "mlb"
     val test = "Test" ext "sml"
     fun testMlb name =
-      (name ^ ".test") ext "mlb"
+      (name ext "test") ext "mlb"
     val sources = "sources" ext "mlb"
   end
 
