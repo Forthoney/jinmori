@@ -12,11 +12,12 @@ If you already have jinmori, clone this repo and simply run
 jinmori build --release
 ```
 
-If you do not have an existing jinmori binary, run the following to install the necessary dependencies
+If you do not have an existing jinmori binary, run the following to install the necessary dependencies.
 ```sh
 mlton bootstrap.sml
 ./bootstrap
 ```
+The script has been tested with `mlton`, but should be compilable with any standard-compliant compiler.
 
 ## Walkthrough
 Create a new project with 

@@ -5,6 +5,8 @@ local
 in
 	../deps/medjool/src/sources.mlb
 	../deps/timber/src/sources.mlb
+	../deps/Combinators/src/sources.mlb
+	../deps/Combinators/src/Fixity.sml
 
 	Path.sml
 	Compiler/sources.mlb

@@ -3,10 +3,14 @@
         "name" : "jinmori",
         "version" : "0.3.0"
       },
+    "description" : "",
+    "license" : "UNLICENSED",
+    "repository" : "",
     "supportedCompilers" : [
         "mlton"
       ],
     "dependencies" : [
+        "github.com/Forthoney/combinators@v0.2.0",
         "github.com/Forthoney/medjool@v0.2.2",
         "github.com/Forthoney/timber@v0.1.3"
       ]
