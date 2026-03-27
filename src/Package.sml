@@ -199,6 +199,13 @@ struct
   fun fetch (pkg as {source = S source, version}) =
     let
       val _ = Logger.info ("fetching package " ^ toString pkg)
+      fun validate {supportedCompilers = depCompilers, ...} =
+        let
+          val cwd = OS.FileSys.getDir ()
+          val {supportedCompilers = projCompilers, ...} = Manifest.read (Path.projectRoot cwd / Path.manifest)
+        in
+          List.exists (fn c => List.exists (fn d => c = d) depCompilers) projCompilers
+        end
       fun download (git, tag, dest) =
         let
           open MLton.Process
@@ -216,22 +223,29 @@ struct
           case reap gitClone of
             Posix.Process.W_EXITED =>
               let
-                val {package, dependencies, ...} =
+                val manifest as {dependencies, ...} = 
                   Manifest.read (dest / Path.manifest)
-                  handle IO.Io {cause = OS.SysErr _, ...} =>
-                    (remove dest; raise Fail "Not a jinmori package")
-                val _ = Logger.debug
-                  ("found dependencies " ^ String.concatWith "," dependencies)
+                  handle IO.Io {cause = OS.SysErr _, ...} => (remove dest; raise Fail "Not a jinmori pacage")
               in
-                List.app (ignore o fetch o Option.valOf o fromString)
-                  dependencies
+                if validate manifest then ()
+                else
+                    raise Fail "Dependency compiler support does not overlap with project. Aborting.";
+                Logger.debug ("found dependencies " ^ String.concatWith "," dependencies);
+                List.app (ignore o fetch o Option.valOf o fromString) dependencies
               end
           | _ => raise NotFound pkg
         end
       val dest = OS.Path.concat (Path.home () / "pkg", source ^ "@" ^ version)
       val _ =
         if FS.access (dest, []) then
-          Logger.debug ("repo found locally at " ^ dest)
+          let
+            val manifest = Manifest.read (dest / Path.manifest)
+          in
+            if validate manifest then 
+              Logger.debug ("repo found locally at " ^ dest)
+            else
+              raise Fail "Dependency compiler support does not overlap with project. Aborting."
+          end
         else
           ( Logger.debug ("repo not found locally at " ^ dest)
           ; download (Path.which "git", version, dest)
