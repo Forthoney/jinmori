@@ -27,9 +27,10 @@ struct
             { package = {name, ...}
             , dependencies
             , supportedCompilers = preferred :: _
+            , ...
             } = Manifest.read (projectDir / Path.manifest)
           val _ = List.app (Package.addToDeps projectDir o Package.fetch o Option.valOf o Package.fromString) dependencies
-          val entryPoint = projectDir / "src" / (name ^ ".mlb")
+          val entryPoint = projectDir / "src" / (name ext "mlb")
           val buildDir = Path.home () / "bin"
           val _ =
             if FS.access (buildDir, []) then
